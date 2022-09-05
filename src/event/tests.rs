@@ -311,6 +311,16 @@ fn encode_events() {
                 },
             },
         },
+        EventTestCase {
+            seq: 18,
+            encoded: json!({
+                "event": "exited",
+                "body": {
+                    "exitCode": 892
+                }
+            }),
+            decoded: Event::Exited { exit_code: 892 },
+        },
     ];
 
     cases.into_iter().for_each(|case| case.run());

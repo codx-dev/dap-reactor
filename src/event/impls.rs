@@ -83,6 +83,16 @@ impl Event {
                 (event, Some(body))
             }
 
+            Event::Exited { exit_code } => {
+                let event = "exited";
+
+                let exit_code = utils::attribute_u64("exitCode", exit_code);
+
+                let body = utils::finalize_object(exit_code);
+
+                (event, Some(body))
+            }
+
             Event::Initialized => ("initialized", None),
 
             Event::Stopped {
@@ -166,6 +176,14 @@ impl TryFrom<&ProtocolEvent> for Event {
                 let capabilities = utils::get_object(map, "capabilities")?;
 
                 Ok(Self::Capabilities { capabilities })
+            }
+
+            "exited" => {
+                let map = &body.ok_or(Error::new("body", Cause::IsMandatory))?;
+
+                let exit_code = utils::get_u64(map, "exitCode")?;
+
+                Ok(Self::Exited { exit_code })
             }
 
             "initialized" => Ok(Self::Initialized),

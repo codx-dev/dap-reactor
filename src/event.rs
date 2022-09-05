@@ -36,6 +36,13 @@ pub enum Event {
     Capabilities {
         capabilities: Capabilities,
     },
+    Continued {
+        thread_id: u64,
+        all_threads_continued: bool,
+    },
+    Exited {
+        exit_code: u64,
+    },
     Initialized,
     Stopped {
         reason: StoppedReason,
@@ -45,9 +52,5 @@ pub enum Event {
         text: Option<String>,
         all_threads_stopped: bool,
         hit_breakpoint_ids: Vec<usize>,
-    },
-    Continued {
-        thread_id: u64,
-        all_threads_continued: bool,
     },
 }
