@@ -57,6 +57,17 @@ pub fn get_optional(map: &Map<String, Value>, attribute: &'static str) -> Option
     map.get(attribute).filter(|v| !v.is_null()).cloned()
 }
 
+pub fn get_object<'a, T>(map: &'a Map<String, Value>, attribute: &'static str) -> Result<T, Error>
+where
+    T: TryFrom<&'a Map<String, Value>, Error = Error>,
+{
+    map.get(attribute)
+        .ok_or_else(|| Error::new(attribute, Cause::IsMandatory))?
+        .as_object()
+        .ok_or_else(|| Error::new(attribute, Cause::MustBeObject))
+        .and_then(T::try_from)
+}
+
 pub fn get_object_optional<'a, T>(
     map: &'a Map<String, Value>,
     attribute: &'static str,
@@ -119,6 +130,55 @@ pub fn get_array_of_string(
                 })
                 .collect()
         })
+}
+
+pub fn get_array_of_string_optional(
+    map: &Map<String, Value>,
+    attribute: &'static str,
+) -> Result<Vec<String>, Error> {
+    Ok(map
+        .get(attribute)
+        .map(|x| {
+            x.as_array()
+                .ok_or_else(|| Error::new(attribute, Cause::MustBeArray))
+                .and_then(|a| {
+                    a.iter()
+                        .map(|x| {
+                            x.as_str()
+                                .ok_or_else(|| Error::new(attribute, Cause::MustBeString))
+                                .map(|s| s.to_string())
+                        })
+                        .collect()
+                })
+        })
+        .transpose()?
+        .unwrap_or_default())
+}
+
+pub fn get_array_of_string_enum_optional<'a, T>(
+    map: &'a Map<String, Value>,
+    attribute: &'static str,
+) -> Result<Vec<T>, Error>
+where
+    T: TryFrom<&'a str, Error = Error>,
+{
+    Ok(map
+        .get(attribute)
+        .map(|x| {
+            x.as_array()
+                .ok_or_else(|| Error::new(attribute, Cause::MustBeArray))
+                .and_then(|a| {
+                    a.iter()
+                        .map(|x| {
+                            x.as_str()
+                                .ok_or_else(|| Error::new(attribute, Cause::MustBeString))
+                                .and_then(T::try_from)
+                        })
+                        .collect()
+                })
+        })
+        .transpose()?
+        .unwrap_or_default())
 }
 
 pub fn get_array_usize_optional(
@@ -223,6 +283,13 @@ pub fn get_u32_optional(
     attribute: &'static str,
 ) -> Result<Option<u32>, Error> {
     get_u64_optional(map, attribute).map(|x| x.map(|n| n as u32))
+}
+
+pub fn attribute<T>(attribute: &'static str, v: T) -> impl Iterator<Item = Option<(String, Value)>>
+where
+    T: Into<Value>,
+{
+    iter::once(Some((attribute.to_string(), v.into())))
 }
 
 pub fn attribute_optional<T>(

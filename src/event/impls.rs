@@ -62,6 +62,27 @@ impl From<String> for BreakpointReason {
 impl Event {
     pub fn into_protocol(self, seq: u64) -> ProtocolEvent {
         let (event, body) = match self {
+            Event::Breakpoint { reason, breakpoint } => {
+                let event = "breakpoint";
+
+                let reason = utils::attribute_string("reason", reason);
+                let breakpoint = utils::attribute("breakpoint", breakpoint);
+
+                let body = utils::finalize_object(reason.chain(breakpoint));
+
+                (event, Some(body))
+            }
+
+            Event::Capabilities { capabilities } => {
+                let event = "capabilities";
+
+                let capabilities = utils::attribute("capabilities", capabilities);
+
+                let body = utils::finalize_object(capabilities);
+
+                (event, Some(body))
+            }
+
             Event::Initialized => ("initialized", None),
 
             Event::Stopped {
@@ -130,6 +151,23 @@ impl TryFrom<&ProtocolEvent> for Event {
         let body = ev.body.as_ref().and_then(|b| b.as_object());
 
         match ev.event.as_str() {
+            "breakpoint" => {
+                let map = &body.ok_or(Error::new("body", Cause::IsMandatory))?;
+
+                let reason = utils::get_string(map, "reason").map(BreakpointReason::from)?;
+                let breakpoint = utils::get_object(map, "breakpoint")?;
+
+                Ok(Self::Breakpoint { reason, breakpoint })
+            }
+
+            "capabilities" => {
+                let map = &body.ok_or(Error::new("body", Cause::IsMandatory))?;
+
+                let capabilities = utils::get_object(map, "capabilities")?;
+
+                Ok(Self::Capabilities { capabilities })
+            }
+
             "initialized" => Ok(Self::Initialized),
 
             "stopped" => {

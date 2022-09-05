@@ -1,7 +1,17 @@
+use crate::types::{Breakpoint, Capabilities};
+
 mod impls;
 
 #[cfg(test)]
 mod tests;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BreakpointReason {
+    Changed,
+    New,
+    Removed,
+    Custom(String),
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum StoppedReason {
@@ -18,15 +28,14 @@ pub enum StoppedReason {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BreakpointReason {
-    Changed,
-    New,
-    Removed,
-    Custom(String),
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Event {
+    Breakpoint {
+        reason: BreakpointReason,
+        breakpoint: Breakpoint,
+    },
+    Capabilities {
+        capabilities: Capabilities,
+    },
     Initialized,
     Stopped {
         reason: StoppedReason,
