@@ -1,4 +1,5 @@
 use core::{fmt, str};
+use std::io;
 
 pub use serde_json::{json, Map, Value};
 
@@ -166,6 +167,15 @@ impl ProtocolMessage {
         payload
     }
 
+    pub fn try_from_json_bytes<B>(bytes: B) -> Result<Self, Error>
+    where
+        B: AsRef<[u8]>,
+    {
+        serde_json::from_slice(bytes.as_ref())
+            .map_err(|_| Error::new("protocolMessage", Cause::IsInvalid))
+            .and_then(|m| Self::try_from(&m))
+    }
+
     pub fn try_from_bytes<B>(bytes: B) -> Result<(usize, Self), Error>
     where
         B: AsRef<[u8]>,
@@ -199,5 +209,87 @@ impl ProtocolMessage {
         let consumed = consumed + len;
 
         Ok((consumed, message))
+    }
+
+    pub fn try_from_reader<R>(reader: R) -> io::Result<(usize, Self)>
+    where
+        R: io::Read,
+    {
+        let mut bytes = reader.bytes();
+
+        let mut consumed = 0;
+        let content_len;
+
+        // find content-length header
+        loop {
+            let line = bytes
+                .by_ref()
+                // forward the error to collect
+                .take_while(|b| b.as_ref().map(|b| b != &('\n' as u8)).unwrap_or(true))
+                .collect::<io::Result<Vec<_>>>()?;
+
+            if line.is_empty() {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    "content-length is mandatory",
+                ));
+            }
+
+            // include the line break
+            consumed += line.len() + 1;
+
+            let line = line.strip_suffix(&['\r' as u8]).unwrap_or(&line);
+
+            let header = match str::from_utf8(&line) {
+                Ok(h) => h.to_ascii_lowercase(),
+                Err(e) => {
+                    tracing::warn!("discarding invalid utf-8 header: {}", e);
+                    continue;
+                }
+            };
+
+            let len = match header.split_once(": ") {
+                Some(("content-length", len)) => len,
+                _ => continue,
+            };
+
+            content_len = usize::from_str_radix(len, 10)
+                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+
+            break;
+        }
+
+        // skip header items until empty line
+        loop {
+            let line = bytes
+                .by_ref()
+                // forward the error to collect
+                .take_while(|b| b.as_ref().map(|b| b != &('\n' as u8)).unwrap_or(true))
+                .collect::<io::Result<Vec<_>>>()?;
+
+            // include the line break
+            consumed += line.len() + 1;
+
+            if line.is_empty() || line.len() == 1 && line[0] == '\r' as u8 {
+                break;
+            }
+        }
+
+        let content = bytes.take(content_len).collect::<io::Result<Vec<_>>>()?;
+
+        if content.len() != content_len {
+            return Err(io::Error::new(
+                io::ErrorKind::UnexpectedEof,
+                "the provided content is not big enough",
+            ));
+        }
+
+        consumed += content_len;
+
+        serde_json::from_slice(&content)
+            .map_err(|_| Error::new("protocolMessage", Cause::IsInvalid))
+            .and_then(|m| Self::try_from(&m))
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
+            .map(|m| (consumed, m))
     }
 }
