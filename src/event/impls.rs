@@ -144,6 +144,80 @@ impl TryFrom<String> for OutputGroup {
     }
 }
 
+impl From<LoadedSourceReason> for &'static str {
+    fn from(r: LoadedSourceReason) -> Self {
+        match r {
+            LoadedSourceReason::New => "new",
+            LoadedSourceReason::Changed => "changed",
+            LoadedSourceReason::Removed => "removed",
+        }
+    }
+}
+
+impl From<LoadedSourceReason> for String {
+    fn from(r: LoadedSourceReason) -> Self {
+        <&'static str>::from(r).into()
+    }
+}
+
+impl TryFrom<&str> for LoadedSourceReason {
+    type Error = Error;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        match s {
+            "new" => Ok(LoadedSourceReason::New),
+            "changed" => Ok(LoadedSourceReason::Changed),
+            "removed" => Ok(LoadedSourceReason::Removed),
+            _ => Err(Error::new("reason", Cause::ExpectsEnum)),
+        }
+    }
+}
+
+impl TryFrom<String> for LoadedSourceReason {
+    type Error = Error;
+
+    fn try_from(s: String) -> Result<Self, Self::Error> {
+        s.as_str().try_into()
+    }
+}
+
+impl From<ProcessStartMethod> for &'static str {
+    fn from(m: ProcessStartMethod) -> Self {
+        match m {
+            ProcessStartMethod::Launch => "launch",
+            ProcessStartMethod::Attach => "attach",
+            ProcessStartMethod::AttachForSuspendedLaunch => "attachForSuspendedLaunch",
+        }
+    }
+}
+
+impl From<ProcessStartMethod> for String {
+    fn from(m: ProcessStartMethod) -> Self {
+        <&'static str>::from(m).into()
+    }
+}
+
+impl TryFrom<&str> for ProcessStartMethod {
+    type Error = Error;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        match s {
+            "launch" => Ok(ProcessStartMethod::Launch),
+            "attach" => Ok(ProcessStartMethod::Attach),
+            "attachForSuspendedLaunch" => Ok(ProcessStartMethod::AttachForSuspendedLaunch),
+            _ => Err(Error::new("reason", Cause::ExpectsEnum)),
+        }
+    }
+}
+
+impl TryFrom<String> for ProcessStartMethod {
+    type Error = Error;
+
+    fn try_from(s: String) -> Result<Self, Self::Error> {
+        s.as_str().try_into()
+    }
+}
+
 impl Event {
     pub fn into_protocol(self, seq: u64) -> ProtocolEvent {
         let (event, body) = match self {
@@ -195,6 +269,17 @@ impl Event {
 
             Event::Initialized => ("initialized", None),
 
+            Event::LoadedSource { reason, source } => {
+                let event = "loadedSource";
+
+                let reason = utils::attribute_string("reason", reason);
+                let source = utils::attribute("source", source);
+
+                let body = utils::finalize_object(reason.chain(source));
+
+                (event, Some(body))
+            }
+
             Event::Output {
                 category,
                 output,
@@ -228,6 +313,33 @@ impl Event {
                         .chain(line)
                         .chain(column)
                         .chain(data),
+                );
+
+                (event, Some(body))
+            }
+
+            Event::Process {
+                name,
+                system_process_id,
+                is_local_process,
+                start_method,
+                pointer_size,
+            } => {
+                let event = "process";
+
+                let name = utils::attribute_string("name", name);
+                let system_process_id =
+                    utils::attribute_u64_optional("systemProcessId", system_process_id);
+                let is_local_process =
+                    utils::attribute_bool_optional("isLocalProcess", is_local_process);
+                let start_method = utils::attribute_string_optional("startMethod", start_method);
+                let pointer_size = utils::attribute_u64_optional("pointerSize", pointer_size);
+
+                let body = utils::finalize_object(
+                    name.chain(system_process_id)
+                        .chain(is_local_process)
+                        .chain(start_method)
+                        .chain(pointer_size),
                 );
 
                 (event, Some(body))
@@ -342,6 +454,16 @@ impl TryFrom<&ProtocolEvent> for Event {
 
             "initialized" => Ok(Self::Initialized),
 
+            "loadedSource" => {
+                let map = &body.ok_or(Error::new("body", Cause::IsMandatory))?;
+
+                let reason =
+                    utils::get_str(map, "category").and_then(LoadedSourceReason::try_from)?;
+                let source = utils::get_object(map, "source")?;
+
+                Ok(Self::LoadedSource { reason, source })
+            }
+
             "output" => {
                 let map = &body.ok_or(Error::new("body", Cause::IsMandatory))?;
 
@@ -367,6 +489,26 @@ impl TryFrom<&ProtocolEvent> for Event {
                     line,
                     column,
                     data,
+                })
+            }
+
+            "process" => {
+                let map = &body.ok_or(Error::new("body", Cause::IsMandatory))?;
+
+                let name = utils::get_string(map, "name")?;
+                let system_process_id = utils::get_u64_optional(map, "systemProcessId")?;
+                let is_local_process = utils::get_bool_optional(map, "isLocalProcess")?;
+                let start_method = utils::get_str_optional(map, "startMethod")?
+                    .map(ProcessStartMethod::try_from)
+                    .transpose()?;
+                let pointer_size = utils::get_u64_optional(map, "pointerSize")?;
+
+                Ok(Self::Process {
+                    name,
+                    system_process_id,
+                    is_local_process,
+                    start_method,
+                    pointer_size,
                 })
             }
 

@@ -53,6 +53,20 @@ pub enum OutputGroup {
     End,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LoadedSourceReason {
+    New,
+    Changed,
+    Removed,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ProcessStartMethod {
+    Launch,
+    Attach,
+    AttachForSuspendedLaunch,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Event {
     Breakpoint {
@@ -70,6 +84,10 @@ pub enum Event {
         exit_code: u64,
     },
     Initialized,
+    LoadedSource {
+        reason: LoadedSourceReason,
+        source: Source,
+    },
     Output {
         category: Option<OutputCategory>,
         output: String,
@@ -79,6 +97,13 @@ pub enum Event {
         line: Option<u64>,
         column: Option<u64>,
         data: Option<Value>,
+    },
+    Process {
+        name: String,
+        system_process_id: Option<u64>,
+        is_local_process: bool,
+        start_method: Option<ProcessStartMethod>,
+        pointer_size: Option<u64>,
     },
     Stopped {
         reason: StoppedReason,
