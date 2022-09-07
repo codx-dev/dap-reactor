@@ -331,7 +331,9 @@ fn encode_events() {
                     }
                 }
             }),
-            decoded: Event::Terminated { restart: Some(json!({"foo": "bar"})) },
+            decoded: Event::Terminated {
+                restart: Some(json!({"foo": "bar"})),
+            },
         },
     ];
 
