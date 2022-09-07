@@ -335,6 +335,94 @@ fn encode_events() {
                 restart: Some(json!({"foo": "bar"})),
             },
         },
+        EventTestCase {
+            seq: 18,
+            encoded: json!({
+                "event": "thread",
+                "body": {
+                    "reason": "exited",
+                    "threadId": 57,
+                }
+            }),
+            decoded: Event::Thread {
+                reason: ThreadReason::Exited,
+                thread_id: 57,
+            },
+        },
+        EventTestCase {
+            seq: 18,
+            encoded: json!({
+                "event": "output",
+                "body": {
+                    "category": "important",
+                    "output": "some output",
+                    "group": "start",
+                    "variablesReference": 28,
+                    "source": {
+                        "name": "source name",
+                        "sourceReference": 15,
+                        "presentationHint": "emphasize",
+                        "origin": "some origin",
+                        "sources": [
+                            {
+                                "name": "source name",
+                                "path": "/some/path",
+                                "presentationHint": "deemphasize",
+                                "origin": "some origin",
+                                "adapterData": 15,
+                            }
+                        ],
+                        "adapterData": {
+                            "foo": "bar"
+                        },
+                        "checksums": [
+                            {
+                                "algorithm": "SHA1",
+                                "checksum": "beef",
+                            }
+                        ]
+                    },
+                    "line": 382,
+                    "column": 82,
+                    "data": {
+                        "foo": "bar"
+                    }
+                }
+            }),
+            decoded: Event::Output {
+                category: Some(OutputCategory::Important),
+                output: "some output".into(),
+                group: Some(OutputGroup::Start),
+                variables_reference: 28,
+                source: Some(Source {
+                    name: Some("source name".into()),
+                    source_reference: Some(SourceReference::Reference(15)),
+                    presentation_hint: Some(SourcePresentationHint::Emphasize),
+                    origin: Some("some origin".into()),
+                    sources: vec![Source {
+                        name: Some("source name".into()),
+                        source_reference: Some(SourceReference::Path("/some/path".into())),
+                        presentation_hint: Some(SourcePresentationHint::Deemphasize),
+                        origin: Some("some origin".into()),
+                        sources: vec![],
+                        adapter_data: Some(15.into()),
+                        checksums: vec![],
+                    }],
+                    adapter_data: Some(json!({
+                        "foo": "bar"
+                    })),
+                    checksums: vec![Checksum {
+                        algorithm: ChecksumAlgorithm::Sha1,
+                        checksum: "beef".into(),
+                    }],
+                }),
+                line: Some(382),
+                column: Some(82),
+                data: Some(json!({
+                    "foo": "bar"
+                })),
+            },
+        },
     ];
 
     cases.into_iter().for_each(|case| case.run());

@@ -61,6 +61,89 @@ impl From<String> for BreakpointReason {
     }
 }
 
+impl From<ThreadReason> for String {
+    fn from(r: ThreadReason) -> Self {
+        match r {
+            ThreadReason::Started => "started".into(),
+            ThreadReason::Exited => "exited".into(),
+            ThreadReason::Custom(s) => s,
+        }
+    }
+}
+
+impl From<String> for ThreadReason {
+    fn from(s: String) -> Self {
+        match s.as_str() {
+            "started" => ThreadReason::Started,
+            "exited" => ThreadReason::Exited,
+            _ => ThreadReason::Custom(s),
+        }
+    }
+}
+
+impl From<OutputCategory> for String {
+    fn from(c: OutputCategory) -> Self {
+        match c {
+            OutputCategory::Console => "console".into(),
+            OutputCategory::Important => "important".into(),
+            OutputCategory::Stdout => "stdout".into(),
+            OutputCategory::Stderr => "stderr".into(),
+            OutputCategory::Telemetry => "telemetry".into(),
+            OutputCategory::Custom(s) => s,
+        }
+    }
+}
+
+impl From<String> for OutputCategory {
+    fn from(s: String) -> Self {
+        match s.as_str() {
+            "console" => OutputCategory::Console,
+            "important" => OutputCategory::Important,
+            "stdout" => OutputCategory::Stdout,
+            "stderr" => OutputCategory::Stderr,
+            "telemetry" => OutputCategory::Telemetry,
+            _ => OutputCategory::Custom(s),
+        }
+    }
+}
+
+impl From<OutputGroup> for &'static str {
+    fn from(g: OutputGroup) -> Self {
+        match g {
+            OutputGroup::Start => "start",
+            OutputGroup::StartCollapsed => "startCollapsed",
+            OutputGroup::End => "end",
+        }
+    }
+}
+
+impl From<OutputGroup> for String {
+    fn from(g: OutputGroup) -> Self {
+        <&'static str>::from(g).into()
+    }
+}
+
+impl TryFrom<&str> for OutputGroup {
+    type Error = Error;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        match s {
+            "start" => Ok(OutputGroup::Start),
+            "startCollapsed" => Ok(OutputGroup::StartCollapsed),
+            "end" => Ok(OutputGroup::End),
+            _ => Err(Error::new("group", Cause::ExpectsEnum)),
+        }
+    }
+}
+
+impl TryFrom<String> for OutputGroup {
+    type Error = Error;
+
+    fn try_from(s: String) -> Result<Self, Self::Error> {
+        s.as_str().try_into()
+    }
+}
+
 impl Event {
     pub fn into_protocol(self, seq: u64) -> ProtocolEvent {
         let (event, body) = match self {
@@ -85,6 +168,21 @@ impl Event {
                 (event, Some(body))
             }
 
+            Event::Continued {
+                thread_id,
+                all_threads_continued,
+            } => {
+                let event = "continued";
+
+                let thread_id = utils::attribute_u64("threadId", thread_id);
+                let all_threads_continued =
+                    utils::attribute_bool_optional("allThreadsContinued", all_threads_continued);
+
+                let body = utils::finalize_object(thread_id.chain(all_threads_continued));
+
+                (event, Some(body))
+            }
+
             Event::Exited { exit_code } => {
                 let event = "exited";
 
@@ -96,6 +194,44 @@ impl Event {
             }
 
             Event::Initialized => ("initialized", None),
+
+            Event::Output {
+                category,
+                output,
+                group,
+                variables_reference,
+                source,
+                line,
+                column,
+                data,
+            } => {
+                let event = "output";
+
+                let category = utils::attribute_string_optional("category", category);
+                let output = utils::attribute_string("output", output);
+                let group = utils::attribute_string_optional("group", group);
+                let variables_reference = utils::attribute_u32_optional(
+                    "variablesReference",
+                    (variables_reference > 0).then_some(variables_reference),
+                );
+                let source = utils::attribute_optional("source", source);
+                let line = utils::attribute_u64_optional("line", line);
+                let column = utils::attribute_u64_optional("column", column);
+                let data = utils::attribute_optional("data", data);
+
+                let body = utils::finalize_object(
+                    category
+                        .chain(output)
+                        .chain(group)
+                        .chain(variables_reference)
+                        .chain(source)
+                        .chain(line)
+                        .chain(column)
+                        .chain(data),
+                );
+
+                (event, Some(body))
+            }
 
             Event::Stopped {
                 reason,
@@ -132,27 +268,23 @@ impl Event {
                 (event, Some(body))
             }
 
-            Event::Continued {
-                thread_id,
-                all_threads_continued,
-            } => {
-                let event = "continued";
-
-                let thread_id = utils::attribute_u64("threadId", thread_id);
-                let all_threads_continued =
-                    utils::attribute_bool_optional("allThreadsContinued", all_threads_continued);
-
-                let body = utils::finalize_object(thread_id.chain(all_threads_continued));
-
-                (event, Some(body))
-            }
-
             Event::Terminated { restart } => {
                 let event = "terminated";
 
                 let body = restart.map(|v| json!({ "restart": v }));
 
                 (event, body)
+            }
+
+            Event::Thread { reason, thread_id } => {
+                let event = "thread";
+
+                let reason = utils::attribute_string("reason", reason);
+                let thread_id = utils::attribute_u64("threadId", thread_id);
+
+                let body = utils::finalize_object(reason.chain(thread_id));
+
+                (event, Some(body))
             }
         };
 
@@ -188,6 +320,18 @@ impl TryFrom<&ProtocolEvent> for Event {
                 Ok(Self::Capabilities { capabilities })
             }
 
+            "continued" => {
+                let map = &body.ok_or(Error::new("body", Cause::IsMandatory))?;
+
+                let thread_id = utils::get_u64(map, "threadId")?;
+                let all_threads_continued = utils::get_bool_optional(map, "allThreadsContinued")?;
+
+                Ok(Self::Continued {
+                    thread_id,
+                    all_threads_continued,
+                })
+            }
+
             "exited" => {
                 let map = &body.ok_or(Error::new("body", Cause::IsMandatory))?;
 
@@ -197,6 +341,34 @@ impl TryFrom<&ProtocolEvent> for Event {
             }
 
             "initialized" => Ok(Self::Initialized),
+
+            "output" => {
+                let map = &body.ok_or(Error::new("body", Cause::IsMandatory))?;
+
+                let category =
+                    utils::get_string_optional(map, "category")?.map(OutputCategory::from);
+                let output = utils::get_string(map, "output")?;
+                let group = utils::get_string_optional(map, "group")?
+                    .map(OutputGroup::try_from)
+                    .transpose()?;
+                let variables_reference =
+                    utils::get_u32_optional(map, "variablesReference")?.unwrap_or(0);
+                let source = utils::get_object_optional(map, "source")?;
+                let line = utils::get_u64_optional(map, "line")?;
+                let column = utils::get_u64_optional(map, "column")?;
+                let data = utils::get_optional(map, "data");
+
+                Ok(Self::Output {
+                    category,
+                    output,
+                    group,
+                    variables_reference,
+                    source,
+                    line,
+                    column,
+                    data,
+                })
+            }
 
             "stopped" => {
                 let map = &body.ok_or(Error::new("body", Cause::IsMandatory))?;
@@ -220,22 +392,19 @@ impl TryFrom<&ProtocolEvent> for Event {
                 })
             }
 
-            "continued" => {
-                let map = &body.ok_or(Error::new("body", Cause::IsMandatory))?;
-
-                let thread_id = utils::get_u64(map, "threadId")?;
-                let all_threads_continued = utils::get_bool_optional(map, "allThreadsContinued")?;
-
-                Ok(Self::Continued {
-                    thread_id,
-                    all_threads_continued,
-                })
-            }
-
             "terminated" => {
                 let restart = body.and_then(|m| utils::get_optional(m, "restart"));
 
                 Ok(Self::Terminated { restart })
+            }
+
+            "thread" => {
+                let map = &body.ok_or(Error::new("body", Cause::IsMandatory))?;
+
+                let reason = utils::get_string(map, "reason").map(ThreadReason::from)?;
+                let thread_id = utils::get_u64(map, "threadId")?;
+
+                Ok(Self::Thread { reason, thread_id })
             }
 
             _ => Err(Error::new("event", Cause::ExpectsEnum)),

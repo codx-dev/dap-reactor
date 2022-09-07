@@ -1,6 +1,6 @@
 use serde_json::Value;
 
-use crate::types::{Breakpoint, Capabilities};
+use crate::types::{Breakpoint, Capabilities, Source};
 
 mod impls;
 
@@ -30,6 +30,30 @@ pub enum StoppedReason {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ThreadReason {
+    Started,
+    Exited,
+    Custom(String),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum OutputCategory {
+    Console,
+    Important,
+    Stdout,
+    Stderr,
+    Telemetry,
+    Custom(String),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OutputGroup {
+    Start,
+    StartCollapsed,
+    End,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Event {
     Breakpoint {
         reason: BreakpointReason,
@@ -46,6 +70,16 @@ pub enum Event {
         exit_code: u64,
     },
     Initialized,
+    Output {
+        category: Option<OutputCategory>,
+        output: String,
+        group: Option<OutputGroup>,
+        variables_reference: u32,
+        source: Option<Source>,
+        line: Option<u64>,
+        column: Option<u64>,
+        data: Option<Value>,
+    },
     Stopped {
         reason: StoppedReason,
         description: Option<String>,
@@ -57,5 +91,9 @@ pub enum Event {
     },
     Terminated {
         restart: Option<Value>,
+    },
+    Thread {
+        reason: ThreadReason,
+        thread_id: u64,
     },
 }
