@@ -1,3 +1,5 @@
+use serde_json::Value;
+
 use crate::types::{Breakpoint, Capabilities};
 
 mod impls;
@@ -52,5 +54,8 @@ pub enum Event {
         text: Option<String>,
         all_threads_stopped: bool,
         hit_breakpoint_ids: Vec<usize>,
+    },
+    Terminated {
+        restart: Option<Value>,
     },
 }

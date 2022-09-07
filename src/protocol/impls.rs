@@ -225,7 +225,7 @@ impl ProtocolMessage {
             let line = bytes
                 .by_ref()
                 // forward the error to collect
-                .take_while(|b| b.as_ref().map(|b| b != &('\n' as u8)).unwrap_or(true))
+                .take_while(|b| b.as_ref().map(|b| b != &b'\n').unwrap_or(true))
                 .collect::<io::Result<Vec<_>>>()?;
 
             if line.is_empty() {
@@ -238,9 +238,9 @@ impl ProtocolMessage {
             // include the line break
             consumed += line.len() + 1;
 
-            let line = line.strip_suffix(&['\r' as u8]).unwrap_or(&line);
+            let line = line.strip_suffix(&[b'\r']).unwrap_or(&line);
 
-            let header = match str::from_utf8(&line) {
+            let header = match str::from_utf8(line) {
                 Ok(h) => h.to_ascii_lowercase(),
                 Err(e) => {
                     tracing::warn!("discarding invalid utf-8 header: {}", e);
@@ -253,7 +253,8 @@ impl ProtocolMessage {
                 _ => continue,
             };
 
-            content_len = usize::from_str_radix(len, 10)
+            content_len = len
+                .parse::<usize>()
                 .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
 
             break;
@@ -264,13 +265,13 @@ impl ProtocolMessage {
             let line = bytes
                 .by_ref()
                 // forward the error to collect
-                .take_while(|b| b.as_ref().map(|b| b != &('\n' as u8)).unwrap_or(true))
+                .take_while(|b| b.as_ref().map(|b| b != &b'\n').unwrap_or(true))
                 .collect::<io::Result<Vec<_>>>()?;
 
             // include the line break
             consumed += line.len() + 1;
 
-            if line.is_empty() || line.len() == 1 && line[0] == '\r' as u8 {
+            if line.is_empty() || line.len() == 1 && line[0] == b'\r' {
                 break;
             }
         }

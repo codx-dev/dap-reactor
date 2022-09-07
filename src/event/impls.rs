@@ -1,3 +1,5 @@
+use serde_json::json;
+
 use super::*;
 use crate::error::{Cause, Error};
 use crate::protocol::ProtocolEvent;
@@ -144,6 +146,14 @@ impl Event {
 
                 (event, Some(body))
             }
+
+            Event::Terminated { restart } => {
+                let event = "terminated";
+
+                let body = restart.map(|v| json!({ "restart": v }));
+
+                (event, body)
+            }
         };
 
         ProtocolEvent {
@@ -220,6 +230,12 @@ impl TryFrom<&ProtocolEvent> for Event {
                     thread_id,
                     all_threads_continued,
                 })
+            }
+
+            "terminated" => {
+                let restart = body.and_then(|m| utils::get_optional(m, "restart"));
+
+                Ok(Self::Terminated { restart })
             }
 
             _ => Err(Error::new("event", Cause::ExpectsEnum)),

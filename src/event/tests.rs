@@ -321,6 +321,18 @@ fn encode_events() {
             }),
             decoded: Event::Exited { exit_code: 892 },
         },
+        EventTestCase {
+            seq: 18,
+            encoded: json!({
+                "event": "terminated",
+                "body": {
+                    "restart": {
+                        "foo": "bar"
+                    }
+                }
+            }),
+            decoded: Event::Terminated { restart: Some(json!({"foo": "bar"})) },
+        },
     ];
 
     cases.into_iter().for_each(|case| case.run());

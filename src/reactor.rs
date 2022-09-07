@@ -154,7 +154,7 @@ where
                                     _ => continue,
                                 };
 
-                                len = match usize::from_str_radix(value, 10) {
+                                len = match value.parse::<usize>() {
                                     Ok(n) => n,
                                     Err(e) => {
                                         tracing::warn!("invalid content-lenght: {}", e);
