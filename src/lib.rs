@@ -19,7 +19,4 @@ pub mod prelude {
 
     #[cfg(feature = "reactor")]
     pub use crate::reactor::*;
-
-    #[cfg(feature = "reactor")]
-    pub use tokio::sync::mpsc;
 }

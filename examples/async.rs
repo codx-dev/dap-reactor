@@ -4,19 +4,24 @@ use dap_reactor::prelude::*;
 use tracing_subscriber::filter::EnvFilter;
 
 struct Service {
-    _events: mpsc::Sender<Event>,
-    _requests: mpsc::Sender<ReactorReverseRequest>,
+    _events: Sender<Event>,
+    _requests: Sender<ReactorReverseRequest>,
+}
+
+impl Service {
+    pub async fn _do_stuff(&mut self) {
+        // one random example on how to interact with the client via events
+        self._events.send(Event::Exited { exit_code: 1 }).await.ok();
+    }
 }
 
 #[async_trait::async_trait]
 impl Backend for Service {
-    async fn init(
-        events: mpsc::Sender<Event>,
-        requests: mpsc::Sender<ReactorReverseRequest>,
-    ) -> Self {
-        let (_events, _requests) = (events, requests);
-
-        Service { _events, _requests }
+    async fn init(events: Sender<Event>, requests: Sender<ReactorReverseRequest>) -> Self {
+        Service {
+            _events: events,
+            _requests: requests,
+        }
     }
 
     async fn request(&mut self, request: Request) -> Option<Response> {

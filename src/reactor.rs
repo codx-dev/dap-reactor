@@ -3,7 +3,6 @@ use std::marker::PhantomData;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
-pub use serde_json::Value;
 use tokio::io::{AsyncBufReadExt, AsyncReadExt as _, AsyncWriteExt as _};
 use tokio::net;
 use tokio::sync::{self, mpsc};
@@ -12,6 +11,10 @@ use crate::event::Event;
 use crate::protocol::ProtocolMessage;
 use crate::request::{Request, ReverseRequest};
 use crate::response::Response;
+
+pub use async_trait::async_trait;
+pub use serde_json::Value;
+pub use tokio::sync::mpsc::Sender;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ReactorReverseRequest {
@@ -30,7 +33,7 @@ impl From<ReverseRequest> for ReactorReverseRequest {
     }
 }
 
-#[async_trait::async_trait]
+#[async_trait]
 pub trait Backend {
     /// Initialize a new instance of a backend.
     ///
@@ -38,10 +41,7 @@ pub trait Backend {
     ///
     /// If an id is provided via `Option<u64>`, it will be the id of the response. Otherwise, the
     /// reactor will pick the next available id.
-    async fn init(
-        events: mpsc::Sender<Event>,
-        requests: mpsc::Sender<ReactorReverseRequest>,
-    ) -> Self;
+    async fn init(events: Sender<Event>, requests: Sender<ReactorReverseRequest>) -> Self;
 
     /// A request was sent by the client. It should be replied as response.
     ///
