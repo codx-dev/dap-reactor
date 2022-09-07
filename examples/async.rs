@@ -5,34 +5,28 @@ use tracing_subscriber::filter::EnvFilter;
 
 struct Service;
 
+#[async_trait::async_trait]
 impl Backend for Service {
-    fn request(&mut self, request: Request) -> Response {
+    async fn init(_events: mpsc::Sender<Event>, _requests: mpsc::Sender<ReverseRequest>) -> Self {
+        Service
+    }
+
+    async fn request(&mut self, request: Request) -> Option<Response> {
         match request {
-            Request::Attach { arguments: _ } => Response::Attach,
-            Request::Disconnect { arguments: _ } => Response::Disconnect,
-            Request::Terminate { arguments: _ } => Response::Terminate,
-            _ => Response::Error {
+            Request::Attach { arguments: _ } => Some(Response::Attach),
+            Request::Disconnect { arguments: _ } => Some(Response::Disconnect),
+            Request::Terminate { arguments: _ } => Some(Response::Terminate),
+            _ => Some(Response::Error {
                 command: "not implemented".into(),
                 error: ProtocolResponseError {
                     message: None,
                     body: None,
                 },
-            },
+            }),
         }
     }
 
-    fn event(&mut self, _event: Event) {}
-}
-
-#[async_trait::async_trait]
-impl AsyncBackend for Service {
-    async fn request(&mut self, request: Request) -> Response {
-        <Self as Backend>::request(self, request)
-    }
-
-    async fn event(&mut self, event: Event) {
-        <Self as Backend>::event(self, event);
-    }
+    async fn response(&mut self, _response: Response) {}
 }
 
 #[tokio::main]
@@ -47,8 +41,8 @@ async fn main() {
         .with_env_filter(filter)
         .init();
 
-    Reactor::new(Service)
-        .bind_async("127.0.0.1:5647")
+    Reactor::new()
+        .bind::<Service, _>("127.0.0.1:5647")
         .await
         .expect("failed to run service");
 }

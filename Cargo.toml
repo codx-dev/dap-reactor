@@ -12,7 +12,7 @@ description = "A debug adapter protocol Rust provider."
 [dependencies]
 async-trait = { version = "0.1", optional = true }
 serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
-tokio = { version = "1.21", optional = true, features = ["io-util", "net", "sync"] }
+tokio = { version = "1.21", optional = true, features = ["io-util", "net", "rt", "sync"] }
 tracing = { version = "0.1", optional = true }
 
 [dev-dependencies]
