@@ -242,9 +242,9 @@ impl ProtocolMessage {
 
             let header = match str::from_utf8(line) {
                 Ok(h) => h.to_ascii_lowercase(),
-                Err(e) => {
+                Err(_e) => {
                     #[cfg(feature = "tracing")]
-                    tracing::warn!("discarding invalid utf-8 header: {}", e);
+                    tracing::warn!("discarding invalid utf-8 header: {}", _e);
                     continue;
                 }
             };
