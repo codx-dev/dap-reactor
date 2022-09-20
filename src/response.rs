@@ -15,6 +15,10 @@ pub enum Response {
     Restart,
     Disconnect,
     Terminate,
+    BreakpointLocations,
+    ConfigurationDone,
+    Continue,
+    Evaluate,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

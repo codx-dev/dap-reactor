@@ -37,6 +37,30 @@ impl Response {
                 command: "terminate".to_string(),
                 result: Ok(None),
             },
+            Response::BreakpointLocations => ProtocolResponse {
+                seq,
+                request_seq,
+                command: "breakpointLocations".to_string(),
+                result: Ok(None),
+            },
+            Response::ConfigurationDone => ProtocolResponse {
+                seq,
+                request_seq,
+                command: "configurationDone".to_string(),
+                result: Ok(None),
+            },
+            Response::Continue => ProtocolResponse {
+                seq,
+                request_seq,
+                command: "continue".to_string(),
+                result: Ok(None),
+            },
+            Response::Evaluate => ProtocolResponse {
+                seq,
+                request_seq,
+                command: "evaluate".to_string(),
+                result: Ok(None),
+            },
         }
     }
 }

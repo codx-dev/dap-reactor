@@ -190,6 +190,16 @@ impl From<Source> for Value {
     }
 }
 
+impl From<ValueFormat> for Value {
+    fn from(format: ValueFormat) -> Self {
+        let ValueFormat { hex } = format;
+
+        let name = utils::attribute_bool_optional("hex", hex);
+
+        utils::finalize_object(name)
+    }
+}
+
 impl TryFrom<&Map<String, Value>> for Source {
     type Error = Error;
 
@@ -751,5 +761,15 @@ impl TryFrom<&Map<String, Value>> for Capabilities {
             supports_exception_filter_options,
             supports_single_thread_execution_requests,
         })
+    }
+}
+
+impl TryFrom<&Map<String, Value>> for ValueFormat {
+    type Error = Error;
+
+    fn try_from(map: &Map<String, Value>) -> Result<Self, Self::Error> {
+        let hex = utils::get_bool_optional(map, "hex")?;
+
+        Ok(Self { hex })
     }
 }

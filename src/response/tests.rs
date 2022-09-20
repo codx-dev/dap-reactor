@@ -80,6 +80,42 @@ fn encode_responses() {
             }),
             decoded: Response::Terminate,
         },
+        ResponseTestCase {
+            seq: 1504,
+            request_seq: 16,
+            encoded: json!({
+                "command": "breakpointLocations",
+                "success": true,
+            }),
+            decoded: Response::BreakpointLocations,
+        },
+        ResponseTestCase {
+            seq: 1505,
+            request_seq: 17,
+            encoded: json!({
+                "command": "configurationDone",
+                "success": true,
+            }),
+            decoded: Response::ConfigurationDone,
+        },
+        ResponseTestCase {
+            seq: 1506,
+            request_seq: 18,
+            encoded: json!({
+                "command": "continue",
+                "success": true,
+            }),
+            decoded: Response::Continue,
+        },
+        ResponseTestCase {
+            seq: 1507,
+            request_seq: 19,
+            encoded: json!({
+                "command": "evaluate",
+                "success": true,
+            }),
+            decoded: Response::Evaluate,
+        },
     ];
 
     cases.into_iter().for_each(|case| case.run());
