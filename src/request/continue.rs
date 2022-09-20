@@ -10,7 +10,7 @@ impl From<ContinueArguments> for Value {
     fn from(args: ContinueArguments) -> Self {
         let ContinueArguments {
             thread_id,
-            single_thread
+            single_thread,
         } = args;
 
         let thread_id = utils::attribute_u64("threadId", thread_id);
@@ -28,7 +28,7 @@ impl TryFrom<&Map<String, Value>> for ContinueArguments {
 
         Ok(Self {
             thread_id,
-            single_thread
+            single_thread,
         })
     }
 }
