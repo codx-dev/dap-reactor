@@ -136,8 +136,3 @@ pub struct ExceptionBreakpointsFilter {
     pub supports_condition: bool,
     pub condition_description: Option<String>,
 }
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ValueFormat {
-    pub hex: bool,
-}
