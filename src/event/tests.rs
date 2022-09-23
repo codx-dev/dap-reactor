@@ -423,6 +423,84 @@ fn encode_events() {
                 })),
             },
         },
+        EventTestCase {
+            seq: 18,
+            encoded: json!({
+                "event": "loadedSource",
+                "body": {
+                    "reason": "changed",
+                    "source": {
+                        "name": "source name",
+                        "sourceReference": 15,
+                        "presentationHint": "emphasize",
+                        "origin": "some origin",
+                        "sources": [
+                            {
+                                "name": "source name",
+                                "path": "/some/path",
+                                "presentationHint": "deemphasize",
+                                "origin": "some origin",
+                                "adapterData": 15,
+                            }
+                        ],
+                        "adapterData": {
+                            "foo": "bar"
+                        },
+                        "checksums": [
+                            {
+                                "algorithm": "SHA1",
+                                "checksum": "beef",
+                            }
+                        ]
+                    }
+                }
+            }),
+            decoded: Event::LoadedSource {
+                reason: LoadedSourceReason::Changed,
+                source: Source {
+                    name: Some("source name".into()),
+                    source_reference: Some(SourceReference::Reference(15)),
+                    presentation_hint: Some(SourcePresentationHint::Emphasize),
+                    origin: Some("some origin".into()),
+                    sources: vec![Source {
+                        name: Some("source name".into()),
+                        source_reference: Some(SourceReference::Path("/some/path".into())),
+                        presentation_hint: Some(SourcePresentationHint::Deemphasize),
+                        origin: Some("some origin".into()),
+                        sources: vec![],
+                        adapter_data: Some(15.into()),
+                        checksums: vec![],
+                    }],
+                    adapter_data: Some(json!({
+                        "foo": "bar"
+                    })),
+                    checksums: vec![Checksum {
+                        algorithm: ChecksumAlgorithm::Sha1,
+                        checksum: "beef".into(),
+                    }],
+                },
+            },
+        },
+        EventTestCase {
+            seq: 18,
+            encoded: json!({
+                "event": "process",
+                "body": {
+                    "name": "some name",
+                    "systemProcessId": 98,
+                    "isLocalProcess": true,
+                    "startMethod": "attachForSuspendedLaunch",
+                    "pointerSize": 52,
+                }
+            }),
+            decoded: Event::Process {
+                name: "some name".into(),
+                system_process_id: Some(98),
+                is_local_process: true,
+                start_method: Some(ProcessStartMethod::AttachForSuspendedLaunch),
+                pointer_size: Some(52),
+            },
+        },
     ];
 
     cases.into_iter().for_each(|case| case.run());
