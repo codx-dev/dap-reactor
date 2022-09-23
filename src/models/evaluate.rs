@@ -334,7 +334,7 @@ impl From<Visibility> for String {
             Protected => "protected".into(),
             Internal => "internal".into(),
             Final => "final".into(),
-            Custom(x) => x.into(),
+            Custom(x) => x,
         }
     }
 }
