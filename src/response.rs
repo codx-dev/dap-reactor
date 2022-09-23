@@ -106,7 +106,7 @@ impl TryFrom<&ProtocolResponse> for Response {
     type Error = Error;
 
     fn try_from(re: &ProtocolResponse) -> Result<Self, Error> {
-        let _result = match &re.result {
+        let result = match &re.result {
             Ok(r) => r,
             Err(e) => {
                 return Ok(Self::Error {
@@ -116,11 +116,27 @@ impl TryFrom<&ProtocolResponse> for Response {
             }
         };
 
+        let result = result
+            .as_ref()
+            .ok_or(Error::new("result", Cause::IsMandatory))?
+            .as_object()
+            .ok_or(Error::new("result", Cause::MustBeObject))?;
+
         match re.command.as_str() {
             "attach" => Ok(Self::Attach),
             "restart" => Ok(Self::Restart),
             "disconnect" => Ok(Self::Disconnect),
             "terminate" => Ok(Self::Terminate),
+            "breakpointLocations" => Ok(Self::BreakpointLocations {
+                body: BreakpointLocationsResponse::try_from(result)?,
+            }),
+            "configurationDone" => Ok(Self::ConfigurationDone),
+            "continue" => Ok(Self::Continue {
+                body: ContinueResponse::try_from(result)?,
+            }),
+            "evaluate" => Ok(Self::Evaluate {
+                body: EvaluateResponse::try_from(result)?,
+            }),
             _ => Err(Error::new("response", Cause::ExpectsEnum)),
         }
     }
