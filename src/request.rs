@@ -1,32 +1,12 @@
-/// Every request has its module so the impls are grouped
-mod attach;
-mod breakpoint_locations;
-mod configuration_done;
-mod r#continue;
-mod disconnect;
-mod evaluate;
-mod launch;
-mod restart;
-mod terminate;
-
 #[cfg(test)]
 mod tests;
 
-use self::attach::AttachArguments;
-use self::breakpoint_locations::BreakpointLocationsArguments;
-use self::configuration_done::ConfigurationDoneArguments;
-use self::disconnect::DisconnectArguments;
-use self::launch::LaunchArguments;
-use self::r#continue::ContinueArguments;
-use self::restart::RestartArguments;
-use self::terminate::TerminateArguments;
-
 use crate::error::{Cause, Error};
+use crate::models::*;
 use crate::protocol::ProtocolRequest;
 use crate::utils;
 
-use crate::request::evaluate::EvaluateArguments;
-use serde_json::{Map, Value};
+use serde_json::Value;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -183,6 +163,32 @@ impl TryFrom<&ProtocolRequest> for Request {
                     .transpose()?;
 
                 Ok(Self::BreakpointLocations { arguments })
+            }
+
+            "configurationDone" => {
+                let arguments = arguments
+                    .map(ConfigurationDoneArguments::try_from)
+                    .transpose()?;
+
+                Ok(Self::ConfigurationDone { arguments })
+            }
+
+            "continue" => {
+                let arguments =
+                    arguments.ok_or_else(|| Error::new("arguments", Cause::IsMandatory))?;
+
+                let arguments = ContinueArguments::try_from(arguments)?;
+
+                Ok(Self::Continue { arguments })
+            }
+
+            "evaluate" => {
+                let arguments =
+                    arguments.ok_or_else(|| Error::new("arguments", Cause::IsMandatory))?;
+
+                let arguments = EvaluateArguments::try_from(arguments)?;
+
+                Ok(Self::Evaluate { arguments })
             }
 
             _ => Err(Error::new("request", Cause::ExpectsEnum)),

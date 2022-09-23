@@ -386,6 +386,25 @@ where
     iter::once((!a.is_empty()).then_some((attribute.to_string(), Value::Array(a))))
 }
 
+pub fn attribute_array_of_string_optional<I, T>(
+    attribute: &'static str,
+    a: Option<I>,
+) -> impl Iterator<Item = Option<(String, Value)>>
+where
+    I: IntoIterator<Item = T>,
+    T: Into<String>,
+{
+    iter::once(
+        a.map(|m| {
+            m.into_iter()
+                .map(|v| Value::from(v.into()))
+                .collect::<Vec<Value>>()
+        })
+        .filter(|m| !m.is_empty())
+        .map(|m| (attribute.to_string(), Value::Array(m))),
+    )
+}
+
 pub fn attribute_array<I, T>(
     attribute: &'static str,
     a: I,

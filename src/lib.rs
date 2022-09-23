@@ -1,5 +1,6 @@
 pub mod error;
 pub mod event;
+pub mod models;
 pub mod protocol;
 pub mod request;
 pub mod response;

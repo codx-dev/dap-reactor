@@ -1,4 +1,5 @@
 use super::*;
+use crate::models::*;
 use crate::prelude::{ValueFormat, *};
 
 use serde_json::json;
@@ -107,7 +108,6 @@ fn encode_requests() {
                 arguments: Some(ConfigurationDoneArguments {}),
             },
         },
-        // FIXME: The test cases with bool fields and false values don't pass the test
         RequestTestCase {
             seq: 18,
             encoded: json!({
@@ -141,7 +141,7 @@ fn encode_requests() {
                 arguments: EvaluateArguments {
                     expression: String::from("expression"),
                     frame_id: Some(60),
-                    context: Some(String::from("context")),
+                    context: Some(Context::Custom(String::from("context"))),
                     format: Some(ValueFormat { hex: true }),
                 },
             },
