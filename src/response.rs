@@ -18,7 +18,7 @@ pub enum Response {
     Disconnect,
     Terminate,
     BreakpointLocations {
-        body: BreakpointLocationsResponse,
+        body: Option<BreakpointLocationsResponse>,
     },
     ConfigurationDone,
     Continue {
@@ -128,7 +128,7 @@ impl TryFrom<&ProtocolResponse> for Response {
             "disconnect" => Ok(Self::Disconnect),
             "terminate" => Ok(Self::Terminate),
             "breakpointLocations" => Ok(Self::BreakpointLocations {
-                body: BreakpointLocationsResponse::try_from(result)?,
+                body: Some(BreakpointLocationsResponse::try_from(result)?),
             }),
             "configurationDone" => Ok(Self::ConfigurationDone),
             "continue" => Ok(Self::Continue {

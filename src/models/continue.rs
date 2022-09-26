@@ -24,6 +24,7 @@ impl From<ContinueArguments> for Value {
         utils::finalize_object(thread_id.chain(single_thread))
     }
 }
+
 impl TryFrom<&Map<String, Value>> for ContinueArguments {
     type Error = Error;
 

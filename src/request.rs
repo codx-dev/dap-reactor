@@ -166,9 +166,7 @@ impl TryFrom<&ProtocolRequest> for Request {
             }
 
             "configurationDone" => {
-                let arguments = arguments
-                    .map(ConfigurationDoneArguments::try_from)
-                    .transpose()?;
+                let arguments = arguments.map(ConfigurationDoneArguments::from);
 
                 Ok(Self::ConfigurationDone { arguments })
             }

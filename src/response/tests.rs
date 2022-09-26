@@ -98,14 +98,14 @@ fn encode_responses() {
                 }
             }),
             decoded: Response::BreakpointLocations {
-                body: BreakpointLocationsResponse {
+                body: Some(BreakpointLocationsResponse {
                     breakpoints: vec![BreakpointLocation {
                         line: 30,
                         column: Some(40),
                         end_line: Some(50),
                         end_column: Some(60),
                     }],
-                },
+                }),
             },
         },
         ResponseTestCase {
@@ -149,7 +149,7 @@ fn encode_responses() {
                         "lazy": true,
                     },
                     "variablesReference": 2,
-                    "namedVariables": "namedVariables",
+                    "namedVariables": 4,
                     "indexedVariables": 3,
                     "memoryReference": "memoryReference"
                 }
@@ -165,7 +165,7 @@ fn encode_responses() {
                         lazy: true,
                     },
                     variables_reference: 2,
-                    named_variables: Some(String::from("namedVariables")),
+                    named_variables: Some(4),
                     indexed_variables: Some(3),
                     memory_reference: Some(String::from("memoryReference")),
                 },

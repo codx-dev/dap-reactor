@@ -11,10 +11,8 @@ impl From<ConfigurationDoneArguments> for Value {
     }
 }
 
-impl TryFrom<&Map<String, Value>> for ConfigurationDoneArguments {
-    type Error = Error;
-
-    fn try_from(_: &Map<String, Value>) -> Result<Self, Self::Error> {
-        Ok(Self {})
+impl From<&Map<String, Value>> for ConfigurationDoneArguments {
+    fn from(_: &Map<String, Value>) -> Self {
+        Self {}
     }
 }

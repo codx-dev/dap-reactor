@@ -29,7 +29,7 @@ pub struct EvaluateResponse {
     pub r#type: Option<String>,
     pub presentation_hint: VariablePresentationHint,
     pub variables_reference: u64,
-    pub named_variables: Option<String>,
+    pub named_variables: Option<u64>,
     pub indexed_variables: Option<u64>,
     pub memory_reference: Option<String>,
 }
@@ -125,7 +125,7 @@ impl TryFrom<&Map<String, Value>> for EvaluateResponse {
         let r#type = utils::get_string_optional(map, "type")?;
         let presentation_hint = utils::get_object(map, "presentationHint")?;
         let variables_reference = utils::get_u64(map, "variablesReference")?;
-        let named_variables = utils::get_string_optional(map, "namedVariables")?;
+        let named_variables = utils::get_u64_optional(map, "namedVariables")?;
         let indexed_variables = utils::get_u64_optional(map, "indexedVariables")?;
         let memory_reference = utils::get_string_optional(map, "memoryReference")?;
 
@@ -157,7 +157,7 @@ impl From<EvaluateResponse> for Value {
         let r#type = utils::attribute_string_optional("type", r#type);
         let presentation_hint = utils::attribute("presentationHint", presentation_hint);
         let variables_reference = utils::attribute_u64("variablesReference", variables_reference);
-        let named_variables = utils::attribute_string_optional("namedVariables", named_variables);
+        let named_variables = utils::attribute_u64_optional("namedVariables", named_variables);
         let indexed_variables =
             utils::attribute_u64_optional("indexedVariables", indexed_variables);
         let memory_reference =
