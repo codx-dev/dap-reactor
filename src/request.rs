@@ -35,6 +35,33 @@ pub enum Request {
     Evaluate {
         arguments: EvaluateArguments,
     },
+    ExceptionInfo {
+        arguments: ExceptionInfoArguments,
+    },
+    Goto {
+        arguments: GotoArguments,
+    },
+    Initialize {
+        arguments: InitializeArguments,
+    },
+    Launch {
+        arguments: LaunchArguments,
+    },
+    LoadedSources {
+        arguments: Option<LoadedSourcesArguments>,
+    },
+    Next {
+        arguments: Option<NextArguments>,
+    },
+    ReverseContinue {
+        arguments: ReverseContinueArguments,
+    },
+    SetBreakpoints {
+        arguments: SetBreakpointsArguments,
+    },
+    StepBack {
+        arguments: StepBackArguments,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -113,6 +140,69 @@ impl Request {
 
                 (command, Some(arguments))
             }
+
+            Request::ExceptionInfo { arguments } => {
+                let command = "exceptionInfo";
+                let arguments = arguments.into();
+
+                (command, Some(arguments))
+            }
+
+            Request::Goto { arguments } => {
+                let command = "goto";
+                let arguments = arguments.into();
+
+                (command, Some(arguments))
+            }
+
+            Request::Initialize { arguments } => {
+                let command = "initialize";
+                let arguments = arguments.into();
+
+                (command, Some(arguments))
+            }
+
+            Request::Launch { arguments } => {
+                let command = "launch";
+                let arguments = arguments.into();
+
+                (command, Some(arguments))
+            }
+
+            Request::LoadedSources { arguments } => {
+                let command = "loadedSources";
+                let arguments = arguments.into();
+
+                (command, Some(arguments))
+            }
+
+            Request::Next { arguments } => {
+                let command = "next";
+                let arguments = arguments.into();
+
+                (command, Some(arguments))
+            }
+
+            Request::ReverseContinue { arguments } => {
+                let command = "reverseContinue";
+                let arguments = arguments.into();
+
+                (command, Some(arguments))
+            }
+
+            Request::SetBreakpoints { arguments } => {
+                let command = "setBreakpoints";
+                let arguments = arguments.into();
+
+                (command, Some(arguments))
+            }
+
+            Request::StepBack { arguments } => {
+                let command = "stepBack";
+                let arguments = arguments.into();
+
+                (command, Some(arguments))
+            }
         };
 
         ProtocolRequest {
@@ -187,6 +277,81 @@ impl TryFrom<&ProtocolRequest> for Request {
                 let arguments = EvaluateArguments::try_from(arguments)?;
 
                 Ok(Self::Evaluate { arguments })
+            }
+
+            "exceptionInfo" => {
+                let arguments =
+                    arguments.ok_or_else(|| Error::new("arguments", Cause::IsMandatory))?;
+
+                let arguments = ExceptionInfoArguments::try_from(arguments)?;
+
+                Ok(Self::ExceptionInfo { arguments })
+            }
+
+            "goto" => {
+                let arguments =
+                    arguments.ok_or_else(|| Error::new("arguments", Cause::IsMandatory))?;
+
+                let arguments = GotoArguments::try_from(arguments)?;
+
+                Ok(Self::Goto { arguments })
+            }
+
+            "initialize" => {
+                let arguments =
+                    arguments.ok_or_else(|| Error::new("arguments", Cause::IsMandatory))?;
+
+                let arguments = InitializeArguments::try_from(arguments)?;
+
+                Ok(Self::Initialize { arguments })
+            }
+
+            "launch" => {
+                let arguments =
+                    arguments.ok_or_else(|| Error::new("arguments", Cause::IsMandatory))?;
+
+                let arguments = LaunchArguments::try_from(arguments)?;
+
+                Ok(Self::Launch { arguments })
+            }
+
+            "loadedSources" => {
+                let arguments = arguments.map(LoadedSourcesArguments::from);
+
+                Ok(Self::LoadedSources { arguments })
+            }
+
+            "next" => {
+                let arguments = arguments.map(NextArguments::try_from).transpose()?;
+
+                Ok(Self::Next { arguments })
+            }
+
+            "reverseContinue" => {
+                let arguments =
+                    arguments.ok_or_else(|| Error::new("arguments", Cause::IsMandatory))?;
+
+                let arguments = ReverseContinueArguments::try_from(arguments)?;
+
+                Ok(Self::ReverseContinue { arguments })
+            }
+
+            "setBreakpoints" => {
+                let arguments =
+                    arguments.ok_or_else(|| Error::new("arguments", Cause::IsMandatory))?;
+
+                let arguments = SetBreakpointsArguments::try_from(arguments)?;
+
+                Ok(Self::SetBreakpoints { arguments })
+            }
+
+            "stepBack" => {
+                let arguments =
+                    arguments.ok_or_else(|| Error::new("arguments", Cause::IsMandatory))?;
+
+                let arguments = StepBackArguments::try_from(arguments)?;
+
+                Ok(Self::StepBack { arguments })
             }
 
             _ => Err(Error::new("request", Cause::ExpectsEnum)),
