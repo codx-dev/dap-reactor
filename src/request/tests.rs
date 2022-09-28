@@ -180,7 +180,7 @@ fn encode_requests() {
                 "command": "initialize",
                 "arguments": {
                     "clientId": "clientId",
-                    "clientName": "clienName",
+                    "clientName": "clientName",
                     "adapterId": "adapterId",
                     "locale": "locale",
                     "linesStartAt1": true,
@@ -222,7 +222,7 @@ fn encode_requests() {
                 "command": "launch",
                 "arguments": {
                     "noDebug": true,
-                    "restart": 0
+                    "__restart": 0
                 }
             }),
             decoded: Request::Launch {
@@ -307,14 +307,14 @@ fn encode_requests() {
                         adapter_data: None,
                         checksums: Vec::new(),
                     },
-                    breakpoints: Some(vec![SourceBreakpoint {
+                    breakpoints: vec![SourceBreakpoint {
                         line: 100,
                         column: Some(50),
                         condition: Some(String::from("condition")),
                         hit_condition: Some(String::from("hitCondition")),
                         log_message: Some(String::from("logMessage")),
-                    }]),
-                    lines: Some(vec![40, 50, 60]),
+                    }],
+                    lines: vec![40, 50, 60],
                     source_modified: true,
                 },
             },

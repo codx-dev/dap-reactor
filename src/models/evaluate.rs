@@ -37,7 +37,7 @@ pub struct EvaluateResponse {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct VariablePresentationHint {
     pub kind: Kind,
-    pub attributes: Option<Vec<Attributes>>,
+    pub attributes: Vec<Attributes>,
     pub visibility: Option<Visibility>,
     pub lazy: bool,
 }
@@ -191,7 +191,7 @@ impl TryFrom<&Map<String, Value>> for VariablePresentationHint {
 
         Ok(Self {
             kind,
-            attributes: Some(attributes),
+            attributes,
             visibility,
             lazy,
         })
@@ -208,7 +208,7 @@ impl From<VariablePresentationHint> for Value {
         } = response;
 
         let kind = utils::attribute_string("kind", kind);
-        let attributes = utils::attribute_array_of_string_optional("attributes", attributes);
+        let attributes = utils::attribute_array_of_string_optional("attributes", Some(attributes));
         let visibility = utils::attribute_string_optional("visibility", visibility);
         let lazy = utils::attribute_bool_optional("lazy", lazy);
 

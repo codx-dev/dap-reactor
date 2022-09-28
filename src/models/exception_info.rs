@@ -30,7 +30,7 @@ pub struct ExceptionDetails {
     pub full_type_name: Option<String>,
     pub evaluate_name: Option<String>,
     pub stack_trace: Option<String>,
-    pub inner_exception: Option<Vec<ExceptionDetails>>,
+    pub inner_exception: Vec<ExceptionDetails>,
 }
 
 impl From<ExceptionInfoArguments> for Value {
@@ -59,7 +59,7 @@ impl TryFrom<&Map<String, Value>> for ExceptionInfoResponse {
     fn try_from(map: &Map<String, Value>) -> Result<Self, Self::Error> {
         let exception_id = utils::get_string(map, "exceptionId")?;
         let description = utils::get_string_optional(map, "description")?;
-        let break_mode = utils::get_string(map, "breakMode")?;
+        let break_mode = ExceptionBreakMode::try_from(utils::get_string(map, "breakMode")?)?;
         let details = utils::get_object_optional(map, "details")?;
 
         Ok(Self {
@@ -111,7 +111,7 @@ impl TryFrom<&Map<String, Value>> for ExceptionDetails {
             full_type_name,
             evaluate_name,
             stack_trace,
-            inner_exception: Some(inner_exception),
+            inner_exception,
         })
     }
 }
@@ -132,7 +132,7 @@ impl From<ExceptionDetails> for Value {
         let full_type_name = utils::attribute_string_optional("fullTypeName", full_type_name);
         let evaluate_name = utils::attribute_string_optional("evaluateName", evaluate_name);
         let stack_trace = utils::attribute_string_optional("stackTrace", stack_trace);
-        let inner_exception = utils::attribute_array_optional("innerexception", inner_exception);
+        let inner_exception = utils::attribute_optional("innerException", Some(inner_exception));
 
         utils::finalize_object(
             message

@@ -1,5 +1,10 @@
 use super::*;
 
+use crate::error::Cause;
+use crate::prelude::Capabilities;
+
+pub type InitializeResponse = Capabilities;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InitializeArguments {
     pub client_id: Option<String>,
@@ -24,6 +29,14 @@ pub enum PathFormat {
     Path,
     Uri,
     Custom(String),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ChecksumAlgorithm {
+    Md5,
+    Sha1,
+    Sha256,
+    Timestamp,
 }
 
 impl From<InitializeArguments> for Value {
@@ -76,7 +89,23 @@ impl From<InitializeArguments> for Value {
             supports_args_can_be_interpreted_by_shell,
         );
 
-        utils::finalize_object(client_id.chain(client_name).chain(adapter_id))
+        utils::finalize_object(
+            client_id
+                .chain(client_name)
+                .chain(adapter_id)
+                .chain(locale)
+                .chain(lines_start_at_1)
+                .chain(column_start_at_1)
+                .chain(path_format)
+                .chain(supports_variable_type)
+                .chain(supports_variable_paging)
+                .chain(supports_run_in_terminal_request)
+                .chain(supports_memory_references)
+                .chain(support_progress_reporting)
+                .chain(supports_invalidated_event)
+                .chain(supports_memory_event)
+                .chain(supports_args_can_be_interpreted_by_shell),
+        )
     }
 }
 
@@ -143,6 +172,67 @@ impl From<String> for PathFormat {
             "path" => Path,
             "uri" => Uri,
             _ => Custom(s),
+        }
+    }
+}
+
+impl From<ChecksumAlgorithm> for String {
+    fn from(r: ChecksumAlgorithm) -> Self {
+        use self::ChecksumAlgorithm::*;
+
+        match r {
+            Md5 => "MD5",
+            Sha1 => "SHA1",
+            Sha256 => "SHA256",
+            Timestamp => "timestamp",
+        }
+        .to_string()
+    }
+}
+
+impl TryFrom<String> for ChecksumAlgorithm {
+    type Error = Error;
+
+    fn try_from(s: String) -> Result<Self, Self::Error> {
+        use self::ChecksumAlgorithm::*;
+
+        Ok(match s.as_str() {
+            "MD5" => Md5,
+            "SHA1" => Sha1,
+            "SHA256" => Sha256,
+            "timestamp" => Timestamp,
+            _ => return Err(Error::new("ExceptionBreakMode", Cause::IsInvalid)),
+        })
+    }
+}
+
+impl TryFrom<&str> for ChecksumAlgorithm {
+    type Error = Error;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        match s {
+            "MD5" => Ok(ChecksumAlgorithm::Md5),
+            "SHA1" => Ok(ChecksumAlgorithm::Sha1),
+            "SHA256" => Ok(ChecksumAlgorithm::Sha256),
+            "timestamp" => Ok(ChecksumAlgorithm::Timestamp),
+            _ => Err(Error::new("checksumAlgorithm", Cause::ExpectsEnum)),
+        }
+    }
+}
+
+impl From<ChecksumAlgorithm> for Value {
+    fn from(a: ChecksumAlgorithm) -> Self {
+        Value::String(a.into())
+    }
+}
+
+impl From<ChecksumAlgorithm> for &'static str {
+    fn from(a: ChecksumAlgorithm) -> Self {
+        match a {
+            ChecksumAlgorithm::Md5 => "MD5",
+            ChecksumAlgorithm::Sha1 => "SHA1",
+            ChecksumAlgorithm::Sha256 => "SHA256",
+            ChecksumAlgorithm::Timestamp => "timestamp",
         }
     }
 }

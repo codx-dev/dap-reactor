@@ -1,5 +1,7 @@
 mod impls;
 
+use crate::models::ChecksumAlgorithm;
+
 use std::collections::HashMap;
 
 use serde_json::Value;
@@ -13,14 +15,6 @@ pub struct Message {
     pub show_user: bool,
     pub url: Option<String>,
     pub url_label: Option<String>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum ChecksumAlgorithm {
-    Md5,
-    Sha1,
-    Sha256,
-    Timestamp,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

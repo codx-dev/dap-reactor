@@ -27,6 +27,23 @@ pub enum Response {
     Evaluate {
         body: EvaluateResponse,
     },
+    ExceptionInfo {
+        body: ExceptionInfoResponse,
+    },
+    Goto,
+    Initialize {
+        body: InitializeResponse,
+    },
+    Launch,
+    LoadedSource {
+        body: LoadedSourcesResponse,
+    },
+    Next,
+    ReverseContinue,
+    SetBreakpoints {
+        body: SetBreakpointsResponse,
+    },
+    StepBack,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -97,6 +114,60 @@ impl Response {
                 request_seq,
                 command: "evaluate".to_string(),
                 result: Ok(Some(body.into())),
+            },
+            Response::ExceptionInfo { body } => ProtocolResponse {
+                seq,
+                request_seq,
+                command: "exceptionInfo".to_string(),
+                result: Ok(Some(body.into())),
+            },
+            Response::Goto => ProtocolResponse {
+                seq,
+                request_seq,
+                command: "goto".to_string(),
+                result: Ok(None),
+            },
+            Response::Initialize { body } => ProtocolResponse {
+                seq,
+                request_seq,
+                command: "initialize".to_string(),
+                result: Ok(Some(body.into())),
+            },
+            Response::Launch => ProtocolResponse {
+                seq,
+                request_seq,
+                command: "launch".to_string(),
+                result: Ok(None),
+            },
+            Response::LoadedSource { body } => ProtocolResponse {
+                seq,
+                request_seq,
+                command: "loadedSources".to_string(),
+                result: Ok(Some(body.into())),
+            },
+            Response::Next => ProtocolResponse {
+                seq,
+                request_seq,
+                command: "next".to_string(),
+                result: Ok(None),
+            },
+            Response::ReverseContinue => ProtocolResponse {
+                seq,
+                request_seq,
+                command: "reverseContinue".to_string(),
+                result: Ok(None),
+            },
+            Response::SetBreakpoints { body } => ProtocolResponse {
+                seq,
+                request_seq,
+                command: "setBreakpoints".to_string(),
+                result: Ok(Some(body.into())),
+            },
+            Response::StepBack => ProtocolResponse {
+                seq,
+                request_seq,
+                command: "stepBack".to_string(),
+                result: Ok(None),
             },
         }
     }

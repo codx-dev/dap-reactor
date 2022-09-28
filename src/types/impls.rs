@@ -59,43 +59,6 @@ impl TryFrom<&Map<String, Value>> for Message {
     }
 }
 
-impl From<ChecksumAlgorithm> for Value {
-    fn from(a: ChecksumAlgorithm) -> Self {
-        Value::String(a.into())
-    }
-}
-
-impl From<ChecksumAlgorithm> for &'static str {
-    fn from(a: ChecksumAlgorithm) -> Self {
-        match a {
-            ChecksumAlgorithm::Md5 => "MD5",
-            ChecksumAlgorithm::Sha1 => "SHA1",
-            ChecksumAlgorithm::Sha256 => "SHA256",
-            ChecksumAlgorithm::Timestamp => "timestamp",
-        }
-    }
-}
-
-impl From<ChecksumAlgorithm> for String {
-    fn from(a: ChecksumAlgorithm) -> Self {
-        <&'static str>::from(a).into()
-    }
-}
-
-impl TryFrom<&str> for ChecksumAlgorithm {
-    type Error = Error;
-
-    fn try_from(s: &str) -> Result<Self, Self::Error> {
-        match s {
-            "MD5" => Ok(ChecksumAlgorithm::Md5),
-            "SHA1" => Ok(ChecksumAlgorithm::Sha1),
-            "SHA256" => Ok(ChecksumAlgorithm::Sha256),
-            "timestamp" => Ok(ChecksumAlgorithm::Timestamp),
-            _ => Err(Error::new("checksumAlgorithm", Cause::ExpectsEnum)),
-        }
-    }
-}
-
 impl From<Checksum> for Value {
     fn from(c: Checksum) -> Self {
         json!({

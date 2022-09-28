@@ -1,4 +1,6 @@
+use crate::models::ChecksumAlgorithm;
 use crate::prelude::*;
+
 use serde_json::{json, Value};
 
 #[test]

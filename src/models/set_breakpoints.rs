@@ -1,11 +1,13 @@
 use super::*;
+
+use crate::prelude::Breakpoint;
 use crate::prelude::Source;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SetBreakpointsArguments {
     pub source: Source,
-    pub breakpoints: Option<Vec<SourceBreakpoint>>,
-    pub lines: Option<Vec<u64>>,
+    pub breakpoints: Vec<SourceBreakpoint>,
+    pub lines: Vec<u64>,
     pub source_modified: bool,
 }
 
@@ -18,6 +20,11 @@ pub struct SourceBreakpoint {
     pub log_message: Option<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SetBreakpointsResponse {
+    pub breakpoints: Vec<Breakpoint>,
+}
+
 impl From<SetBreakpointsArguments> for Value {
     fn from(args: SetBreakpointsArguments) -> Self {
         let SetBreakpointsArguments {
@@ -28,8 +35,8 @@ impl From<SetBreakpointsArguments> for Value {
         } = args;
 
         let source = utils::attribute("source", source);
-        let breakpoints = utils::attribute_array_optional("breakpoints", breakpoints);
-        let lines = utils::attribute_array_optional("lines", lines);
+        let breakpoints = utils::attribute_optional("breakpoints", Some(breakpoints));
+        let lines = utils::attribute_optional("lines", Some(lines));
         let source_modified = utils::attribute_bool_optional("sourceModified", source_modified);
 
         utils::finalize_object(
@@ -52,8 +59,8 @@ impl TryFrom<&Map<String, Value>> for SetBreakpointsArguments {
 
         Ok(Self {
             source,
-            breakpoints: Some(breakpoints),
-            lines: Some(lines),
+            breakpoints,
+            lines,
             source_modified,
         })
     }
@@ -101,5 +108,25 @@ impl TryFrom<&Map<String, Value>> for SourceBreakpoint {
             hit_condition,
             log_message,
         })
+    }
+}
+
+impl From<SetBreakpointsResponse> for Value {
+    fn from(args: SetBreakpointsResponse) -> Self {
+        let SetBreakpointsResponse { breakpoints } = args;
+
+        let breakpoints = utils::attribute_array("breakpoints", breakpoints);
+
+        utils::finalize_object(breakpoints)
+    }
+}
+
+impl TryFrom<&Map<String, Value>> for SetBreakpointsResponse {
+    type Error = Error;
+
+    fn try_from(map: &Map<String, Value>) -> Result<Self, Self::Error> {
+        let breakpoints = utils::get_array_optional(map, "breakpoints")?;
+
+        Ok(Self { breakpoints })
     }
 }
