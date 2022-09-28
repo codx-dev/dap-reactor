@@ -15,6 +15,7 @@ pub mod reactor;
 pub mod prelude {
     pub use crate::error::*;
     pub use crate::event::*;
+    pub use crate::models::*;
     pub use crate::protocol::*;
     pub use crate::request::*;
     pub use crate::response::*;
