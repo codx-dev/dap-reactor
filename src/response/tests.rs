@@ -1,4 +1,6 @@
+use crate::models::*;
 use crate::prelude::*;
+
 use serde_json::{json, Value};
 
 #[test]
@@ -80,6 +82,95 @@ fn encode_responses() {
             }),
             decoded: Response::Terminate,
         },
+        ResponseTestCase {
+            seq: 1504,
+            request_seq: 16,
+            encoded: json!({
+                "command": "breakpointLocations",
+                "success": true,
+                "body": {
+                    "breakpoints": [{
+                        "line": 30,
+                        "column": 40,
+                        "endLine": 50,
+                        "endColumn": 60,
+                    }]
+                }
+            }),
+            decoded: Response::BreakpointLocations {
+                body: Some(BreakpointLocationsResponse {
+                    breakpoints: vec![BreakpointLocation {
+                        line: 30,
+                        column: Some(40),
+                        end_line: Some(50),
+                        end_column: Some(60),
+                    }],
+                }),
+            },
+        },
+        ResponseTestCase {
+            seq: 1505,
+            request_seq: 17,
+            encoded: json!({
+                "command": "configurationDone",
+                "success": true,
+            }),
+            decoded: Response::ConfigurationDone,
+        },
+        ResponseTestCase {
+            seq: 1506,
+            request_seq: 18,
+            encoded: json!({
+                "command": "continue",
+                "success": true,
+                "body": {
+                    "allThreadsContinued": true
+                }
+            }),
+            decoded: Response::Continue {
+                body: ContinueResponse {
+                    all_threads_continued: true,
+                },
+            },
+        },
+        ResponseTestCase {
+            seq: 1507,
+            request_seq: 19,
+            encoded: json!({
+                "command": "evaluate",
+                "success": true,
+                "body": {
+                    "result": "result",
+                    "type": "type",
+                    "presentationHint": {
+                        "kind": "property",
+                        "attributes": ["static", "constant"],
+                        "visibility": "public",
+                        "lazy": true,
+                    },
+                    "variablesReference": 2,
+                    "namedVariables": 4,
+                    "indexedVariables": 3,
+                    "memoryReference": "memoryReference"
+                }
+            }),
+            decoded: Response::Evaluate {
+                body: EvaluateResponse {
+                    result: String::from("result"),
+                    r#type: Some(String::from("type")),
+                    presentation_hint: VariablePresentationHint {
+                        kind: Kind::Property,
+                        attributes: Some(vec![Attributes::Static, Attributes::Constant]),
+                        visibility: Some(Visibility::Public),
+                        lazy: true,
+                    },
+                    variables_reference: 2,
+                    named_variables: Some(4),
+                    indexed_variables: Some(3),
+                    memory_reference: Some(String::from("memoryReference")),
+                },
+            },
+        },
     ];
 
     cases.into_iter().for_each(|case| case.run());
@@ -108,7 +199,7 @@ impl ResponseTestCase {
         let encoded =
             ProtocolMessage::try_from(&encoded).expect("failed to parse encoded protocol message");
 
-        let protocol = decoded.clone().into_protocol(seq, request_seq);
+        let protocol = decoded.into_protocol(seq, request_seq);
         let protocol = ProtocolMessage::from(protocol);
 
         assert_eq!(encoded, protocol);
@@ -120,6 +211,7 @@ impl ResponseTestCase {
             ProtocolMessage::try_from_bytes(protocol_bytes).expect("failed to decode message");
 
         assert_eq!(len, consumed);
+
         assert_eq!(protocol, protocol_decoded);
     }
 }

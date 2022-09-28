@@ -1,5 +1,8 @@
+use super::*;
+use crate::models::*;
 use crate::prelude::*;
-use serde_json::{json, Value};
+
+use serde_json::json;
 
 #[test]
 fn encode_requests() {
@@ -64,6 +67,85 @@ fn encode_requests() {
                 arguments: Some(TerminateArguments { restart: true }),
             },
         },
+        RequestTestCase {
+            seq: 16,
+            encoded: json!({
+                "command": "breakpointLocations",
+                "arguments": {
+                    "source": {
+                        "name": "hello",
+                        "origin": "home",
+                    },
+                    "line": 50,
+                    "endColumn": 55,
+                }
+            }),
+            decoded: Request::BreakpointLocations {
+                arguments: Some(BreakpointLocationsArguments {
+                    source: Source {
+                        name: Some(String::from("hello")),
+                        source_reference: None,
+                        presentation_hint: None,
+                        origin: Some(String::from("home")),
+                        sources: Vec::new(),
+                        adapter_data: None,
+                        checksums: Vec::new(),
+                    },
+                    line: 50,
+                    column: None,
+                    end_line: None,
+                    end_column: Some(55),
+                }),
+            },
+        },
+        RequestTestCase {
+            seq: 17,
+            encoded: json!({
+                "command": "configurationDone",
+                "arguments": {},
+            }),
+            decoded: Request::ConfigurationDone {
+                arguments: Some(ConfigurationDoneArguments {}),
+            },
+        },
+        RequestTestCase {
+            seq: 18,
+            encoded: json!({
+                "command": "continue",
+                "arguments": {
+                    "threadId": 40,
+                    "singleThread": true
+                }
+            }),
+            decoded: Request::Continue {
+                arguments: ContinueArguments {
+                    thread_id: 40,
+                    single_thread: true,
+                },
+            },
+        },
+        RequestTestCase {
+            seq: 19,
+            encoded: json!({
+                "command": "evaluate",
+                "arguments": {
+                    "expression": "expression",
+                    "frameId": 60,
+                    "context": "context",
+                    "format": {
+                        "hex": true
+                    }
+                }
+            }),
+            decoded: Request::Evaluate {
+                arguments: EvaluateArguments {
+                    expression: String::from("expression"),
+                    frame_id: Some(60),
+                    context: Some(Context::Custom(String::from("context"))),
+                    format: Some(ValueFormat { hex: true }),
+                },
+            },
+        },
     ];
 
     cases.into_iter().for_each(|case| case.run());
@@ -89,7 +171,7 @@ impl RequestTestCase {
         let encoded =
             ProtocolMessage::try_from(&encoded).expect("failed to parse encoded protocol message");
 
-        let protocol = decoded.clone().into_protocol(seq);
+        let protocol = decoded.into_protocol(seq);
         let protocol = ProtocolMessage::from(protocol);
 
         assert_eq!(encoded, protocol);
