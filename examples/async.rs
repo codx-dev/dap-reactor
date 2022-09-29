@@ -60,5 +60,8 @@ async fn main() {
         .with_capacity(50)
         .bind("127.0.0.1:5647")
         .await
+        .expect("failed to init service")
+        .listen()
+        .await
         .expect("failed to run service");
 }
