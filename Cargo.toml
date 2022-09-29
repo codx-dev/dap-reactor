@@ -1,7 +1,7 @@
 [package]
 name = "dap-reactor"
 version = "0.1.1"
-authors = ["Victor Lopez <victor@codx.io>"]
+authors = ["Codex Dev <contact@codx.io>"]
 categories = ["development-tools::debugging"]
 edition = "2021"
 keywords = ["dap"]
