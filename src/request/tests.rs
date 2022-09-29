@@ -146,6 +146,197 @@ fn encode_requests() {
                 },
             },
         },
+        RequestTestCase {
+            seq: 20,
+            encoded: json!({
+                "command": "exceptionInfo",
+                "arguments": {
+                    "threadId": 20
+                }
+            }),
+            decoded: Request::ExceptionInfo {
+                arguments: ExceptionInfoArguments { thread_id: 20 },
+            },
+        },
+        RequestTestCase {
+            seq: 21,
+            encoded: json!({
+                "command": "goto",
+                "arguments": {
+                    "threadId": 10,
+                    "targetId": 11,
+                }
+            }),
+            decoded: Request::Goto {
+                arguments: GotoArguments {
+                    thread_id: 10,
+                    target_id: 11,
+                },
+            },
+        },
+        RequestTestCase {
+            seq: 22,
+            encoded: json!({
+                "command": "initialize",
+                "arguments": {
+                    "clientId": "clientId",
+                    "clientName": "clientName",
+                    "adapterId": "adapterId",
+                    "locale": "locale",
+                    "linesStartAt1": true,
+                    "columnStartAt1": true,
+                    "pathFormat": "uri",
+                    "supportsVariableType": true,
+                    "supportsVariablePaging": true,
+                    "supportsRunInTerminalRequest": true,
+                    "supportsMemoryReferences": true,
+                    "supportsProgressReporting": true,
+                    "supportsInvalidatedEvent": true,
+                    "supportsMemoryEvent": true,
+                    "supportsArgsCanBeInterpretedByShell": true,
+                }
+            }),
+            decoded: Request::Initialize {
+                arguments: InitializeArguments {
+                    client_id: Some(String::from("clientId")),
+                    client_name: Some(String::from("clientName")),
+                    adapter_id: String::from("adapterId"),
+                    locale: Some(String::from("locale")),
+                    lines_start_at_1: true,
+                    column_start_at_1: true,
+                    path_format: Some(PathFormat::Uri),
+                    supports_variable_type: true,
+                    supports_variable_paging: true,
+                    supports_run_in_terminal_request: true,
+                    supports_memory_references: true,
+                    supports_progress_reporting: true,
+                    supports_invalidated_event: true,
+                    supports_memory_event: true,
+                    supports_args_can_be_interpreted_by_shell: true,
+                },
+            },
+        },
+        RequestTestCase {
+            seq: 23,
+            encoded: json!({
+                "command": "launch",
+                "arguments": {
+                    "noDebug": true,
+                    "__restart": 0
+                }
+            }),
+            decoded: Request::Launch {
+                arguments: LaunchArguments {
+                    no_debug: true,
+                    restart: Some(Value::from(0)),
+                },
+            },
+        },
+        RequestTestCase {
+            seq: 24,
+            encoded: json!({
+                "command": "loadedSources",
+                "arguments": {}
+            }),
+            decoded: Request::LoadedSources {
+                arguments: Some(LoadedSourcesArguments {}),
+            },
+        },
+        RequestTestCase {
+            seq: 25,
+            encoded: json!({
+                "command": "next",
+                "arguments": {
+                    "threadId": 50,
+                    "singleThread": true,
+                    "granularity": "instruction"
+                }
+            }),
+            decoded: Request::Next {
+                arguments: Some(NextArguments {
+                    thread_id: 50,
+                    single_thread: true,
+                    granularity: Some(SteppingGranularity::Instruction),
+                }),
+            },
+        },
+        RequestTestCase {
+            seq: 26,
+            encoded: json!({
+                "command": "reverseContinue",
+                "arguments": {
+                    "threadId": 40,
+                    "singleThread": true
+                }
+            }),
+            decoded: Request::ReverseContinue {
+                arguments: ReverseContinueArguments {
+                    thread_id: 40,
+                    single_thread: true,
+                },
+            },
+        },
+        RequestTestCase {
+            seq: 27,
+            encoded: json!({
+                "command": "setBreakpoints",
+                "arguments": {
+                    "source": {
+                        "name": "hello",
+                        "origin": "home",
+                    },
+                    "breakpoints": [{
+                        "line": 100,
+                        "column": 50,
+                        "condition": "condition",
+                        "hitCondition": "hitCondition",
+                        "logMessage": "logMessage",
+                    }],
+                    "lines": [40, 50, 60],
+                    "sourceModified": true
+                }
+            }),
+            decoded: Request::SetBreakpoints {
+                arguments: SetBreakpointsArguments {
+                    source: Source {
+                        name: Some(String::from("hello")),
+                        source_reference: None,
+                        presentation_hint: None,
+                        origin: Some(String::from("home")),
+                        sources: Vec::new(),
+                        adapter_data: None,
+                        checksums: Vec::new(),
+                    },
+                    breakpoints: vec![SourceBreakpoint {
+                        line: 100,
+                        column: Some(50),
+                        condition: Some(String::from("condition")),
+                        hit_condition: Some(String::from("hitCondition")),
+                        log_message: Some(String::from("logMessage")),
+                    }],
+                    lines: vec![40, 50, 60],
+                    source_modified: true,
+                },
+            },
+        },
+        RequestTestCase {
+            seq: 28,
+            encoded: json!({
+                "command": "stepBack",
+                "arguments": {
+                    "threadId": 60,
+                    "singleThread": true,
+                    "granularity": "line"
+                }
+            }),
+            decoded: Request::StepBack {
+                arguments: StepBackArguments {
+                    thread_id: 60,
+                    single_thread: true,
+                    granularity: Some(SteppingGranularity::Line),
+                },
+            },
+        },
     ];
 
     cases.into_iter().for_each(|case| case.run());

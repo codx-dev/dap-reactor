@@ -132,6 +132,28 @@ pub fn get_array_of_string(
         })
 }
 
+pub fn get_array_of_u64_optional(
+    map: &Map<String, Value>,
+    attribute: &'static str,
+) -> Result<Vec<u64>, Error> {
+    Ok(map
+        .get(attribute)
+        .map(|x| {
+            x.as_array()
+                .ok_or_else(|| Error::new(attribute, Cause::MustBeArray))
+                .and_then(|a| {
+                    a.iter()
+                        .map(|x| {
+                            x.as_u64()
+                                .ok_or_else(|| Error::new(attribute, Cause::MustBeUnsignedInteger))
+                        })
+                        .collect()
+                })
+        })
+        .transpose()?
+        .unwrap_or_default())
+}
+
 pub fn get_array_of_string_optional(
     map: &Map<String, Value>,
     attribute: &'static str,

@@ -160,7 +160,7 @@ fn encode_responses() {
                     r#type: Some(String::from("type")),
                     presentation_hint: VariablePresentationHint {
                         kind: Kind::Property,
-                        attributes: Some(vec![Attributes::Static, Attributes::Constant]),
+                        attributes: vec![Attributes::Static, Attributes::Constant],
                         visibility: Some(Visibility::Public),
                         lazy: true,
                     },
@@ -170,6 +170,296 @@ fn encode_responses() {
                     memory_reference: Some(String::from("memoryReference")),
                 },
             },
+        },
+        ResponseTestCase {
+            seq: 1508,
+            request_seq: 20,
+            encoded: json!({
+                "command": "exceptionInfo",
+                "success": true,
+                "body": {
+                    "exceptionId": "exceptionId",
+                    "description": "description",
+                    "breakMode": "always",
+                    "details": {
+                        "message":  "message",
+                        "typeName": "typeName",
+                        "fullTypeName": "fullTypeName",
+                        "evaluateName": "evaluateName",
+                        "stackTrace": "stackTrace",
+                        "innerException": [{
+                            "message":  "message2",
+                            "typeName": "typeName2",
+                            "fullTypeName": "fullTypeName2",
+                            "evaluateName": "evaluateName2",
+                            "stackTrace": "stackTrace2",
+                            "innerException": [],
+                        }],
+                    }
+                }
+            }),
+            decoded: Response::ExceptionInfo {
+                body: ExceptionInfoResponse {
+                    exception_id: String::from("exceptionId"),
+                    description: Some(String::from("description")),
+                    break_mode: ExceptionBreakMode::Always,
+                    details: Some(ExceptionDetails {
+                        message: Some(String::from("message")),
+                        type_name: Some(String::from("typeName")),
+                        full_type_name: Some(String::from("fullTypeName")),
+                        evaluate_name: Some(String::from("evaluateName")),
+                        stack_trace: Some(String::from("stackTrace")),
+                        inner_exception: vec![ExceptionDetails {
+                            message: Some(String::from("message2")),
+                            type_name: Some(String::from("typeName2")),
+                            full_type_name: Some(String::from("fullTypeName2")),
+                            evaluate_name: Some(String::from("evaluateName2")),
+                            stack_trace: Some(String::from("stackTrace2")),
+                            inner_exception: vec![],
+                        }],
+                    }),
+                },
+            },
+        },
+        ResponseTestCase {
+            seq: 1509,
+            request_seq: 21,
+            encoded: json!({
+                "command": "goto",
+                "success": true,
+            }),
+            decoded: Response::Goto,
+        },
+        ResponseTestCase {
+            seq: 1510,
+            request_seq: 22,
+            encoded: {
+                let body = json!({
+                    "supportsConfigurationDoneRequest": true,
+                    "supportsFunctionBreakpoints": true,
+                    "supportsConditionalBreakpoints": true,
+                    "supportsHitConditionalBreakpoints": true,
+                    "supportsEvaluateForHovers": true,
+                    "exceptionBreakpointFilters": [{
+                        "filter": "filter",
+                        "label": "label",
+                        "description": "description",
+                        "default": true,
+                        "supportsCondition": true,
+                        "conditionDescription": "conditionDescription",
+                    }],
+                    "supportsStepBack": true,
+                    "supportsSetVariable": true,
+                    "supportsRestartFrame": true,
+                    "supportsGotoTargetsRequest": true,
+                    "supportsStepInTargetsRequest": true,
+                    "supportsCompletionsRequest": true,
+                    "completionTriggerCharacters": ["a"],
+                    "supportsModulesRequest": true,
+                    "additionalModuleColumns": [{
+                        "attributeName": "attribute",
+                        "label": "label",
+                        "format": "format",
+                        "type": "boolean",
+                        "width": 50
+                    }],
+                    "supportedChecksumAlgorithms": ["MD5"],
+                    "supportsRestartRequest": true,
+                    "supportsExceptionOptions": true,
+                    "supportsValueFormattingOptions": true,
+                    "supportsExceptionInfoRequest": true,
+                    "supportTerminateDebuggee": true,
+                    "supportSuspendDebuggee": true,
+                    "supportsDelayedStackTraceLoading": true,
+                    "supportsLoadedSourcesRequest": true,
+                    "supportsLogPoints": true,
+                    "supportsTerminateThreadsRequest": true,
+                    "supportsSetExpression": true,
+                    "supportsTerminateRequest": true,
+                    "supportsDataBreakpoints": true,
+                    "supportsReadMemoryRequest": true,
+                    "supportsWriteMemoryRequest": true,
+                    "supportsDisassembleRequest": true,
+                    "supportsCancelRequest": true,
+                    "supportsBreakpointLocationsRequest": true,
+                    "supportsClipboardContext": true,
+                    "supportsExceptionFilterOptions": true,
+                    "supportsInstructionBreakpoints": true,
+                    "supportsSingleThreadExecutionRequests": true,
+                    "supportsSteppingGranularity": true,
+                });
+
+                json!({
+                    "command": "initialize",
+                    "success": true,
+                    "body": body
+                })
+            },
+            decoded: Response::Initialize {
+                body: InitializeResponse {
+                    supports_configuration_done_request: true,
+                    supports_function_breakpoints: true,
+                    supports_conditional_breakpoints: true,
+                    supports_hit_conditional_breakpoints: true,
+                    supports_evaluate_for_hovers: true,
+                    exception_breakpoint_filters: vec![ExceptionBreakpointsFilter {
+                        filter: String::from("filter"),
+                        label: String::from("label"),
+                        description: Some(String::from("description")),
+                        default: true,
+                        supports_condition: true,
+                        condition_description: Some(String::from("conditionDescription")),
+                    }],
+                    supports_step_back: true,
+                    supports_set_variable: true,
+                    supports_restart_frame: true,
+                    supports_goto_targets_request: true,
+                    supports_step_in_targets_request: true,
+                    supports_completions_request: true,
+                    completion_trigger_characters: vec!["a".to_string()],
+                    supports_modules_request: true,
+                    additional_module_columns: vec![ColumnDescriptor {
+                        attribute_name: String::from("attribute"),
+                        label: String::from("label"),
+                        format: Some(String::from("format")),
+                        ty: Some(ColumnDescriptorType::Boolean),
+                        width: Some(50),
+                    }],
+                    supported_checksum_algorithms: vec![ChecksumAlgorithm::Md5],
+                    supports_restart_request: true,
+                    supports_exception_options: true,
+                    supports_value_formatting_options: true,
+                    supports_exception_info_request: true,
+                    support_terminate_debuggee: true,
+                    support_suspend_debuggee: true,
+                    supports_delayed_stack_trace_loading: true,
+                    supports_loaded_sources_request: true,
+                    supports_log_points: true,
+                    supports_terminate_threads_request: true,
+                    supports_set_expression: true,
+                    supports_terminate_request: true,
+                    supports_data_breakpoints: true,
+                    supports_read_memory_request: true,
+                    supports_write_memory_request: true,
+                    supports_disassemble_request: true,
+                    supports_cancel_request: true,
+                    supports_breakpoint_locations_request: true,
+                    supports_clipboard_context: true,
+                    supports_stepping_granularity: true,
+                    supports_instruction_breakpoints: true,
+                    supports_exception_filter_options: true,
+                    supports_single_thread_execution_requests: true,
+                },
+            },
+        },
+        ResponseTestCase {
+            seq: 1511,
+            request_seq: 23,
+            encoded: json!({
+                "command": "launch",
+                "success": true,
+            }),
+            decoded: Response::Launch,
+        },
+        ResponseTestCase {
+            seq: 1512,
+            request_seq: 24,
+            encoded: json!({
+                "command": "loadedSources",
+                "success": true,
+                "body": {
+                    "sources": [{
+                        "name": "name",
+                        "sourceReference": 10,
+                        "presentationHint": "normal",
+                        "origin": "origin",
+                        "adapterData": 0,
+                        "checksums": [{
+                            "algorithm": "MD5",
+                            "checksum": "checksum",
+                        }]
+                    }]
+                }
+            }),
+            decoded: Response::LoadedSources {
+                body: LoadedSourcesResponse {
+                    sources: vec![Source {
+                        name: Some(String::from("name")),
+                        source_reference: Some(SourceReference::Reference(10)),
+                        presentation_hint: Some(SourcePresentationHint::Normal),
+                        origin: Some(String::from("origin")),
+                        sources: Vec::new(),
+                        adapter_data: Some(Value::from(0)),
+                        checksums: vec![Checksum {
+                            algorithm: ChecksumAlgorithm::Md5,
+                            checksum: String::from("checksum"),
+                        }],
+                    }],
+                },
+            },
+        },
+        ResponseTestCase {
+            seq: 1513,
+            request_seq: 25,
+            encoded: json!({
+                "command": "next",
+                "success": true
+            }),
+            decoded: Response::Next,
+        },
+        ResponseTestCase {
+            seq: 1513,
+            request_seq: 25,
+            encoded: json!({
+                "command": "reverseContinue",
+                "success": true
+            }),
+            decoded: Response::ReverseContinue,
+        },
+        ResponseTestCase {
+            seq: 1514,
+            request_seq: 26,
+            encoded: json!({
+                "command": "setBreakpoints",
+                "success": true,
+                "body": {
+                    "breakpoints": [{
+                        "id": 10,
+                        "verified": true,
+                        "message": "message",
+                        "line": 20,
+                        "column": 30,
+                        "endLine": 40,
+                        "endColumn": 50,
+                        "offset": 0,
+                    }]
+                }
+            }),
+            decoded: Response::SetBreakpoints {
+                body: SetBreakpointsResponse {
+                    breakpoints: vec![Breakpoint {
+                        id: Some(10),
+                        verified: true,
+                        message: Some(String::from("message")),
+                        source: None,
+                        line: Some(20),
+                        column: Some(30),
+                        end_line: Some(40),
+                        end_column: Some(50),
+                        instruction_reference: None,
+                        offset: Some(0),
+                    }],
+                },
+            },
+        },
+        ResponseTestCase {
+            seq: 1515,
+            request_seq: 27,
+            encoded: json!({
+                "command": "stepBack",
+                "success": true
+            }),
+            decoded: Response::StepBack,
         },
     ];
 
