@@ -167,6 +167,15 @@ impl ProtocolMessage {
         payload
     }
 
+    pub fn try_write<W>(self, mut writer: W) -> io::Result<usize>
+    where
+        W: io::Write,
+    {
+        let message = self.into_adapter_message();
+
+        writer.write(message.as_ref())
+    }
+
     pub fn try_from_json_bytes<B>(bytes: B) -> Result<Self, Error>
     where
         B: AsRef<[u8]>,
