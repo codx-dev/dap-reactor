@@ -201,7 +201,7 @@ impl TryFrom<String> for ChecksumAlgorithm {
             "SHA1" => Sha1,
             "SHA256" => Sha256,
             "timestamp" => Timestamp,
-            _ => return Err(Error::new("ExceptionBreakMode", Cause::IsInvalid)),
+            _ => return Err(Error::new("checksumAlgorithm", Cause::IsInvalid)),
         })
     }
 }

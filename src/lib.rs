@@ -1,5 +1,3 @@
-#![recursion_limit = "256"]
-
 pub mod error;
 pub mod event;
 pub mod models;

@@ -35,7 +35,7 @@ pub enum Response {
         body: InitializeResponse,
     },
     Launch,
-    LoadedSource {
+    LoadedSources {
         body: LoadedSourcesResponse,
     },
     Next,
@@ -139,7 +139,7 @@ impl Response {
                 command: "launch".to_string(),
                 result: Ok(None),
             },
-            Response::LoadedSource { body } => ProtocolResponse {
+            Response::LoadedSources { body } => ProtocolResponse {
                 seq,
                 request_seq,
                 command: "loadedSources".to_string(),

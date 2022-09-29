@@ -377,7 +377,7 @@ fn encode_responses() {
                     }]
                 }
             }),
-            decoded: Response::LoadedSource {
+            decoded: Response::LoadedSources {
                 body: LoadedSourcesResponse {
                     sources: vec![Source {
                         name: Some(String::from("name")),
