@@ -233,10 +233,8 @@ fn encode_responses() {
         ResponseTestCase {
             seq: 1510,
             request_seq: 22,
-            encoded: json!({
-                "command": "initialize",
-                "success": true,
-                "body": {
+            encoded: {
+                let body = json!({
                     "supportsConfigurationDoneRequest": true,
                     "supportsFunctionBreakpoints": true,
                     "supportsConditionalBreakpoints": true,
@@ -285,12 +283,18 @@ fn encode_responses() {
                     "supportsCancelRequest": true,
                     "supportsBreakpointLocationsRequest": true,
                     "supportsClipboardContext": true,
-                    "supportsSteppingGranularity": true,
-                    "supportsInstructionBreakpoints": true,
                     "supportsExceptionFilterOptions": true,
+                    "supportsInstructionBreakpoints": true,
                     "supportsSingleThreadExecutionRequests": true,
-                }
-            }),
+                    "supportsSteppingGranularity": true,
+                });
+
+                json!({
+                    "command": "initialize",
+                    "success": true,
+                    "body": body
+                })
+            },
             decoded: Response::Initialize {
                 body: InitializeResponse {
                     supports_configuration_done_request: true,
