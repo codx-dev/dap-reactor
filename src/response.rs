@@ -215,9 +215,7 @@ impl TryFrom<&ProtocolResponse> for Response {
             "initialize" => Ok(Self::Initialize {
                 body: InitializeResponse::try_from(result)?,
             }),
-            "launch" => Ok(Self::ExceptionInfo {
-                body: ExceptionInfoResponse::try_from(result)?,
-            }),
+            "launch" => Ok(Self::Launch),
             "loadedSources" => Ok(Self::LoadedSources {
                 body: LoadedSourcesResponse::try_from(result)?,
             }),
