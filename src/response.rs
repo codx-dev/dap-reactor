@@ -208,6 +208,25 @@ impl TryFrom<&ProtocolResponse> for Response {
             "evaluate" => Ok(Self::Evaluate {
                 body: EvaluateResponse::try_from(result)?,
             }),
+            "exceptionInfo" => Ok(Self::ExceptionInfo {
+                body: ExceptionInfoResponse::try_from(result)?,
+            }),
+            "goto" => Ok(Self::Goto),
+            "initialize" => Ok(Self::Initialize {
+                body: InitializeResponse::try_from(result)?,
+            }),
+            "launch" => Ok(Self::ExceptionInfo {
+                body: ExceptionInfoResponse::try_from(result)?,
+            }),
+            "loadedSources" => Ok(Self::LoadedSources {
+                body: LoadedSourcesResponse::try_from(result)?,
+            }),
+            "next" => Ok(Self::Next),
+            "reverseContinue" => Ok(Self::ReverseContinue),
+            "setBreakpoints" => Ok(Self::SetBreakpoints {
+                body: SetBreakpointsResponse::try_from(result)?,
+            }),
+            "stepBack" => Ok(Self::StepBack),
             _ => Err(Error::new("response", Cause::ExpectsEnum)),
         }
     }
