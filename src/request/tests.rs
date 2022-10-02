@@ -337,6 +337,65 @@ fn encode_requests() {
                 },
             },
         },
+        RequestTestCase {
+            seq: 28,
+            encoded: json!({
+                "command": "customAddBreakpoint",
+                "arguments": {
+                    "breakpoint": {
+                    "id": 60,
+                    "verified": true,
+                    "message": "foo",
+                    "source": {
+                        "name": "hello",
+                        "origin": "home",
+                    },
+                    "line": 50,
+                    "column": 90,
+                    "endLine": 110,
+                    "endColumn": 120,
+                    "instructionReference": "bar",
+                    "offset": 130,
+                    }
+                }
+            }),
+            decoded: Request::CustomAddBreakpoint {
+                arguments: CustomAddBreakpointArguments {
+                    breakpoint: Breakpoint {
+                        id: Some(60),
+                        verified: true,
+                        message: Some(String::from("foo")),
+                        source: Some(Source {
+                            name: Some(String::from("hello")),
+                            source_reference: None,
+                            presentation_hint: None,
+                            origin: Some(String::from("home")),
+                            sources: Vec::new(),
+                            adapter_data: None,
+                            checksums: Vec::new(),
+                        }),
+                        line: Some(50),
+                        column: Some(90),
+                        end_line: Some(110),
+                        end_column: Some(120),
+                        instruction_reference: Some(String::from("bar")),
+                        offset: Some(130),
+                    },
+                },
+            },
+        },
+        RequestTestCase {
+            seq: 28,
+            encoded: json!({
+                "command": "customRemoveBreakpoint",
+                "arguments": {
+                    "id": 15,
+                }
+            }),
+            decoded: Request::CustomRemoveBreakpoint {
+                arguments: CustomRemoveBreakpointArguments { id: 15 },
+            },
+        },
     ];
 
     cases.into_iter().for_each(|case| case.run());

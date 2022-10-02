@@ -56,6 +56,12 @@ pub struct ClientRequest {
     pub request: Request,
 }
 
+impl From<Request> for ClientRequest {
+    fn from(request: Request) -> Self {
+        Self { seq: None, request }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ClientResponse {
     pub seq: u64,
