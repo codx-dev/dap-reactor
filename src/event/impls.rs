@@ -295,10 +295,13 @@ impl Event {
                 let category = utils::attribute_string_optional("category", category);
                 let output = utils::attribute_string("output", output);
                 let group = utils::attribute_string_optional("group", group);
+                // UNWRAP: Okay because then clause only executes when the
+                // first argument is true. So in the then closure, it's not a None.
                 let variables_reference = utils::attribute_u32_optional(
                     "variablesReference",
-                    (variables_reference > 0).then_some(variables_reference),
+                    (variables_reference > Some(0)).then(|| variables_reference.unwrap()),
                 );
+
                 let source = utils::attribute_optional("source", source);
                 let line = utils::attribute_u64_optional("line", line);
                 let column = utils::attribute_u64_optional("column", column);
@@ -484,7 +487,7 @@ impl TryFrom<&ProtocolEvent> for Event {
                     category,
                     output,
                     group,
-                    variables_reference,
+                    variables_reference: Some(variables_reference),
                     source,
                     line,
                     column,
