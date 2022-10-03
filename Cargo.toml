@@ -11,6 +11,7 @@ description = "A debug adapter protocol Rust provider."
 
 [dependencies]
 async-trait = { version = "0.1", optional = true }
+bytes = { version = "1.2", optional = true }
 serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
 tokio = { version = "1.21", optional = true, features = ["io-util", "net", "rt", "sync"] }
 tracing = { version = "0.1", optional = true }
@@ -21,7 +22,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [features]
 default = ["reactor", "serde_json/default"]
-reactor = ["async-trait", "tracing", "tokio"]
+reactor = ["async-trait", "bytes", "tracing", "tokio"]
 
 [[example]]
 name = "async"
