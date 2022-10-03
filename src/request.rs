@@ -62,6 +62,13 @@ pub enum Request {
     StepBack {
         arguments: StepBackArguments,
     },
+
+    CustomAddBreakpoint {
+        arguments: CustomAddBreakpointArguments,
+    },
+    CustomRemoveBreakpoint {
+        arguments: CustomRemoveBreakpointArguments,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -199,6 +206,19 @@ impl Request {
 
             Request::StepBack { arguments } => {
                 let command = "stepBack";
+                let arguments = arguments.into();
+
+                (command, Some(arguments))
+            }
+
+            Request::CustomAddBreakpoint { arguments } => {
+                let command = "customAddBreakpoint";
+                let arguments = arguments.into();
+
+                (command, Some(arguments))
+            }
+            Request::CustomRemoveBreakpoint { arguments } => {
+                let command = "customRemoveBreakpoint";
                 let arguments = arguments.into();
 
                 (command, Some(arguments))
@@ -352,6 +372,24 @@ impl TryFrom<&ProtocolRequest> for Request {
                 let arguments = StepBackArguments::try_from(arguments)?;
 
                 Ok(Self::StepBack { arguments })
+            }
+
+            "customAddBreakpoint" => {
+                let arguments =
+                    arguments.ok_or_else(|| Error::new("arguments", Cause::IsMandatory))?;
+
+                let arguments = CustomAddBreakpointArguments::try_from(arguments)?;
+
+                Ok(Self::CustomAddBreakpoint { arguments })
+            }
+
+            "customRemoveBreakpoint" => {
+                let arguments =
+                    arguments.ok_or_else(|| Error::new("arguments", Cause::IsMandatory))?;
+
+                let arguments = CustomRemoveBreakpointArguments::try_from(arguments)?;
+
+                Ok(Self::CustomRemoveBreakpoint { arguments })
             }
 
             _ => Err(Error::new("request", Cause::ExpectsEnum)),

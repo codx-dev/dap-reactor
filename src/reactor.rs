@@ -1,3 +1,8 @@
+mod client;
+
+#[cfg(test)]
+mod tests;
+
 use std::io;
 use std::marker::PhantomData;
 use std::ops::Deref;
@@ -14,6 +19,7 @@ use crate::request::{Request, ReverseRequest};
 use crate::response::Response;
 
 pub use async_trait::async_trait;
+pub use client::*;
 pub use serde_json::Value;
 pub use tokio::sync::mpsc::Sender;
 

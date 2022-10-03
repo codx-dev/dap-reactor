@@ -44,6 +44,12 @@ pub enum Response {
         body: SetBreakpointsResponse,
     },
     StepBack,
+    CustomAddBreakpoint {
+        body: CustomAddBreakpointResponse,
+    },
+    CustomRemoveBreakpoint {
+        body: CustomRemoveBreakpointResponse,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -169,6 +175,18 @@ impl Response {
                 command: "stepBack".to_string(),
                 result: Ok(None),
             },
+            Response::CustomAddBreakpoint { body } => ProtocolResponse {
+                seq,
+                request_seq,
+                command: "customAddBreakpoint".to_string(),
+                result: Ok(Some(body.into())),
+            },
+            Response::CustomRemoveBreakpoint { body } => ProtocolResponse {
+                seq,
+                request_seq,
+                command: "customRemoveBreakpoint".to_string(),
+                result: Ok(Some(body.into())),
+            },
         }
     }
 }
@@ -225,6 +243,12 @@ impl TryFrom<&ProtocolResponse> for Response {
                 body: SetBreakpointsResponse::try_from(result)?,
             }),
             "stepBack" => Ok(Self::StepBack),
+            "customAddBreakpoint" => Ok(Self::CustomAddBreakpoint {
+                body: CustomAddBreakpointResponse::try_from(result)?,
+            }),
+            "customRemoveBreakpoint" => Ok(Self::CustomRemoveBreakpoint {
+                body: CustomRemoveBreakpointResponse::try_from(result)?,
+            }),
             _ => Err(Error::new("response", Cause::ExpectsEnum)),
         }
     }
