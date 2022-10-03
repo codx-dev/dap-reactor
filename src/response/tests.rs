@@ -461,6 +461,38 @@ fn encode_responses() {
             }),
             decoded: Response::StepBack,
         },
+        ResponseTestCase {
+            seq: 1514,
+            request_seq: 26,
+            encoded: json!({
+                "command": "customAddBreakpoint",
+                "success": true,
+                "body": {
+                    "id": 15
+                }
+            }),
+            decoded: Response::CustomAddBreakpoint {
+                body: CustomAddBreakpointResponse { id: 15 },
+            },
+        },
+        ResponseTestCase {
+            seq: 1514,
+            request_seq: 26,
+            encoded: json!({
+                "command": "customRemoveBreakpoint",
+                "success": true,
+                "body": {
+                    "id": 28,
+                    "removed": true
+                }
+            }),
+            decoded: Response::CustomRemoveBreakpoint {
+                body: CustomRemoveBreakpointResponse {
+                    id: 28,
+                    removed: true,
+                },
+            },
+        },
     ];
 
     cases.into_iter().for_each(|case| case.run());
