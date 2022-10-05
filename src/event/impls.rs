@@ -299,7 +299,7 @@ impl Event {
                 // first argument is true. So in the then closure, it's not a None.
                 let variables_reference = utils::attribute_u32_optional(
                     "variablesReference",
-                    (variables_reference > Some(0)).then(|| variables_reference.unwrap()),
+                    variables_reference.filter(|r| r > &0),
                 );
 
                 let source = utils::attribute_optional("source", source);
