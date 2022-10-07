@@ -295,13 +295,10 @@ impl Event {
                 let category = utils::attribute_string_optional("category", category);
                 let output = utils::attribute_string("output", output);
                 let group = utils::attribute_string_optional("group", group);
-                // UNWRAP: Okay because then clause only executes when the
-                // first argument is true. So in the then closure, it's not a None.
                 let variables_reference = utils::attribute_u32_optional(
                     "variablesReference",
                     variables_reference.filter(|r| r > &0),
                 );
-
                 let source = utils::attribute_optional("source", source);
                 let line = utils::attribute_u64_optional("line", line);
                 let column = utils::attribute_u64_optional("column", column);
