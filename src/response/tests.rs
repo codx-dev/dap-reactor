@@ -158,12 +158,12 @@ fn encode_responses() {
                 body: EvaluateResponse {
                     result: String::from("result"),
                     r#type: Some(String::from("type")),
-                    presentation_hint: VariablePresentationHint {
+                    presentation_hint: Some(VariablePresentationHint {
                         kind: Kind::Property,
                         attributes: vec![Attributes::Static, Attributes::Constant],
                         visibility: Some(Visibility::Public),
                         lazy: true,
-                    },
+                    }),
                     variables_reference: 2,
                     named_variables: Some(4),
                     indexed_variables: Some(3),

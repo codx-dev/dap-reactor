@@ -297,7 +297,7 @@ impl Event {
                 let group = utils::attribute_string_optional("group", group);
                 let variables_reference = utils::attribute_u32_optional(
                     "variablesReference",
-                    (variables_reference > 0).then_some(variables_reference),
+                    variables_reference.filter(|r| r > &0),
                 );
                 let source = utils::attribute_optional("source", source);
                 let line = utils::attribute_u64_optional("line", line);
@@ -484,7 +484,7 @@ impl TryFrom<&ProtocolEvent> for Event {
                     category,
                     output,
                     group,
-                    variables_reference,
+                    variables_reference: Some(variables_reference),
                     source,
                     line,
                     column,

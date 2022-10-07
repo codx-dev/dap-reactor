@@ -92,7 +92,7 @@ pub enum Event {
         category: Option<OutputCategory>,
         output: String,
         group: Option<OutputGroup>,
-        variables_reference: u32,
+        variables_reference: Option<u32>,
         source: Option<Source>,
         line: Option<u64>,
         column: Option<u64>,

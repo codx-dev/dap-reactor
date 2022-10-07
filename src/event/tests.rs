@@ -395,7 +395,7 @@ fn encode_events() {
                 category: Some(OutputCategory::Important),
                 output: "some output".into(),
                 group: Some(OutputGroup::Start),
-                variables_reference: 28,
+                variables_reference: Some(28),
                 source: Some(Source {
                     name: Some("source name".into()),
                     source_reference: Some(SourceReference::Reference(15)),

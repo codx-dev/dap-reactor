@@ -27,7 +27,7 @@ pub enum Context {
 pub struct EvaluateResponse {
     pub result: String,
     pub r#type: Option<String>,
-    pub presentation_hint: VariablePresentationHint,
+    pub presentation_hint: Option<VariablePresentationHint>,
     pub variables_reference: u64,
     pub named_variables: Option<u64>,
     pub indexed_variables: Option<u64>,
@@ -123,7 +123,7 @@ impl TryFrom<&Map<String, Value>> for EvaluateResponse {
     fn try_from(map: &Map<String, Value>) -> Result<Self, Self::Error> {
         let result = utils::get_string(map, "result")?;
         let r#type = utils::get_string_optional(map, "type")?;
-        let presentation_hint = utils::get_object(map, "presentationHint")?;
+        let presentation_hint = utils::get_object_optional(map, "presentationHint")?;
         let variables_reference = utils::get_u64(map, "variablesReference")?;
         let named_variables = utils::get_u64_optional(map, "namedVariables")?;
         let indexed_variables = utils::get_u64_optional(map, "indexedVariables")?;
