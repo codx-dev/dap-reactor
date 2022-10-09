@@ -57,15 +57,21 @@ pub fn get_optional(map: &Map<String, Value>, attribute: &'static str) -> Option
     map.get(attribute).filter(|v| !v.is_null()).cloned()
 }
 
-pub fn get_object<'a, T>(map: &'a Map<String, Value>, attribute: &'static str) -> Result<T, Error>
-where
-    T: TryFrom<&'a Map<String, Value>, Error = Error>,
-{
+pub fn get_map<'a>(
+    map: &'a Map<String, Value>,
+    attribute: &'static str,
+) -> Result<&'a Map<String, Value>, Error> {
     map.get(attribute)
         .ok_or_else(|| Error::new(attribute, Cause::IsMandatory))?
         .as_object()
         .ok_or_else(|| Error::new(attribute, Cause::MustBeObject))
-        .and_then(T::try_from)
+}
+
+pub fn get_object<'a, T>(map: &'a Map<String, Value>, attribute: &'static str) -> Result<T, Error>
+where
+    T: TryFrom<&'a Map<String, Value>, Error = Error>,
+{
+    get_map(map, attribute).and_then(T::try_from)
 }
 
 pub fn get_object_optional<'a, T>(
@@ -82,6 +88,26 @@ where
                 .and_then(T::try_from)
         })
         .transpose()
+}
+
+pub fn get_array_of_object<'a, T>(
+    map: &'a Map<String, Value>,
+    attribute: &'static str,
+) -> Result<Vec<T>, Error>
+where
+    T: TryFrom<&'a Map<String, Value>, Error = Error>,
+{
+    map.get(attribute)
+        .ok_or_else(|| Error::new(attribute, Cause::IsMandatory))?
+        .as_array()
+        .ok_or_else(|| Error::new(attribute, Cause::MustBeArray))?
+        .iter()
+        .map(|t| {
+            t.as_object()
+                .ok_or_else(|| Error::new(attribute, Cause::MustBeObject))
+                .and_then(T::try_from)
+        })
+        .collect()
 }
 
 pub fn get_array_optional<'a, T>(

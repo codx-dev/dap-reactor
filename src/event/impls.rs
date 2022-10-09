@@ -398,6 +398,12 @@ impl Event {
 
                 (event, Some(body))
             }
+
+            Event::Custom { body } => {
+                let event = "custom";
+
+                (event, body)
+            }
         };
 
         ProtocolEvent {
@@ -548,6 +554,10 @@ impl TryFrom<&ProtocolEvent> for Event {
 
                 Ok(Self::Thread { reason, thread_id })
             }
+
+            "custom" => Ok(Self::Custom {
+                body: ev.body.as_ref().cloned(),
+            }),
 
             _ => Err(Error::new("event", Cause::ExpectsEnum)),
         }
