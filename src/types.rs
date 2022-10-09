@@ -130,3 +130,136 @@ pub struct ExceptionBreakpointsFilter {
     pub supports_condition: bool,
     pub condition_description: Option<String>,
 }
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Thread {
+    pub id: u64,
+    pub name: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StackFrameModuleId {
+    Number(u64),
+    String(String),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum StackFramePresentationHint {
+    Normal,
+    Label,
+    Subtle,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StackFrame {
+    pub id: u64,
+    pub name: String,
+    pub source: Option<Source>,
+    pub line: u64,
+    pub column: u64,
+    pub end_line: Option<u64>,
+    pub end_column: Option<u64>,
+    pub can_restart: bool,
+    pub instruction_pointer_reference: Option<String>,
+    pub module_id: Option<StackFrameModuleId>,
+    pub presentation_hint: Option<StackFramePresentationHint>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct StackFrameFormat {
+    pub parameters: bool,
+    pub parameter_types: bool,
+    pub parameter_names: bool,
+    pub parameter_values: bool,
+    pub line: bool,
+    pub module: bool,
+    pub include_all: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ScopePresentationHint {
+    Arguments,
+    Locals,
+    Registers,
+    Custom(String),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Scope {
+    pub name: String,
+    pub presentation_hint: Option<ScopePresentationHint>,
+    pub variables_reference: u64,
+    pub named_variables: Option<u64>,
+    pub indexed_variables: Option<u64>,
+    pub expensive: bool,
+    pub source: Option<Source>,
+    pub line: Option<u64>,
+    pub column: Option<u64>,
+    pub end_line: Option<u64>,
+    pub end_column: Option<u64>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ValueFormat {
+    pub hex: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum VariablePresentationHintKind {
+    Property,
+    Method,
+    Class,
+    Data,
+    Event,
+    BaseClass,
+    InnerClass,
+    Interface,
+    MostDerivedClass,
+    Virtual,
+    DataBreakpoint,
+    Custom(String),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum VariablePresentationHintAttribute {
+    Static,
+    Constant,
+    ReadOnly,
+    RawString,
+    HasObjectId,
+    CanHaveObjectId,
+    HasSideEffects,
+    HasDataBreakpoint,
+    Custom(String),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum VariablePresentationHintVisibility {
+    Public,
+    Private,
+    Protected,
+    Internal,
+    Final,
+    Custom(String),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct VariablePresentationHint {
+    pub kind: Option<VariablePresentationHintKind>,
+    pub attributes: Vec<VariablePresentationHintAttribute>,
+    pub visibility: Option<VariablePresentationHintVisibility>,
+    pub lazy: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Variable {
+    pub name: String,
+    pub value: String,
+    pub r#type: Option<String>,
+    pub presentation_hint: Option<VariablePresentationHint>,
+    pub evaluate_name: Option<String>,
+    pub variables_reference: u64,
+    pub named_variables: Option<u64>,
+    pub indexed_variables: Option<u64>,
+    pub memory_reference: Option<String>,
+}

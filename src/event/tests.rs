@@ -503,6 +503,16 @@ fn encode_events() {
                 pointer_size: Some(52),
             },
         },
+        EventTestCase {
+            seq: 18,
+            encoded: json!({
+                "event": "custom",
+                "body": "foo"
+            }),
+            decoded: Event::Custom {
+                body: Some(json!("foo")),
+            },
+        },
     ];
 
     cases.into_iter().for_each(|case| case.run());

@@ -1,20 +1,17 @@
 use super::*;
 
+use crate::types::{ValueFormat, VariablePresentationHint};
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EvaluateArguments {
     pub expression: String,
     pub frame_id: Option<u64>,
-    pub context: Option<Context>,
+    pub context: Option<EvaluateContext>,
     pub format: Option<ValueFormat>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ValueFormat {
-    pub hex: bool,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Context {
+pub enum EvaluateContext {
     Variables,
     Watch,
     Repl,
@@ -32,53 +29,6 @@ pub struct EvaluateResponse {
     pub named_variables: Option<u64>,
     pub indexed_variables: Option<u64>,
     pub memory_reference: Option<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct VariablePresentationHint {
-    pub kind: Kind,
-    pub attributes: Vec<Attributes>,
-    pub visibility: Option<Visibility>,
-    pub lazy: bool,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Kind {
-    Property,
-    Method,
-    Class,
-    Data,
-    Event,
-    BaseClass,
-    InnerClass,
-    Interface,
-    MostDerivedClass,
-    Virtual,
-    DataBreakpoint,
-    Custom(String),
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Attributes {
-    Static,
-    Constant,
-    ReadOnly,
-    RawString,
-    HasObjectId,
-    CanHaveObjectId,
-    HasSideEffects,
-    HasDataBreakpoint,
-    Custom(String),
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Visibility {
-    Public,
-    Private,
-    Protected,
-    Internal,
-    Final,
-    Custom(String),
 }
 
 impl From<EvaluateArguments> for Value {
@@ -105,7 +55,7 @@ impl TryFrom<&Map<String, Value>> for EvaluateArguments {
     fn try_from(map: &Map<String, Value>) -> Result<Self, Self::Error> {
         let expression = utils::get_string(map, "expression")?;
         let frame_id = utils::get_u64_optional(map, "frameId")?;
-        let context = utils::get_string_optional(map, "context")?.map(Context::from);
+        let context = utils::get_string_optional(map, "context")?.map(EvaluateContext::from);
         let format = utils::get_object_optional(map, "format")?;
 
         Ok(Self {
@@ -175,50 +125,9 @@ impl From<EvaluateResponse> for Value {
     }
 }
 
-impl TryFrom<&Map<String, Value>> for VariablePresentationHint {
-    type Error = Error;
-
-    fn try_from(map: &Map<String, Value>) -> Result<Self, Self::Error> {
-        let kind = utils::get_string(map, "kind")?.into();
-        let attributes = utils::get_array_of_string_optional(map, "attributes")?
-            .iter()
-            // FIXME: implement for &str too
-            .map(|e| Attributes::from(e.to_owned()))
-            .collect::<Vec<Attributes>>();
-
-        let visibility = utils::get_string_optional(map, "visibility")?.map(Visibility::from);
-        let lazy = utils::get_bool_optional(map, "lazy")?;
-
-        Ok(Self {
-            kind,
-            attributes,
-            visibility,
-            lazy,
-        })
-    }
-}
-
-impl From<VariablePresentationHint> for Value {
-    fn from(response: VariablePresentationHint) -> Self {
-        let VariablePresentationHint {
-            kind,
-            attributes,
-            visibility,
-            lazy,
-        } = response;
-
-        let kind = utils::attribute_string("kind", kind);
-        let attributes = utils::attribute_array_of_string_optional("attributes", Some(attributes));
-        let visibility = utils::attribute_string_optional("visibility", visibility);
-        let lazy = utils::attribute_bool_optional("lazy", lazy);
-
-        utils::finalize_object(kind.chain(attributes).chain(visibility).chain(lazy))
-    }
-}
-
-impl From<Context> for String {
-    fn from(r: Context) -> Self {
-        use self::Context::*;
+impl From<EvaluateContext> for String {
+    fn from(r: EvaluateContext) -> Self {
+        use self::EvaluateContext::*;
 
         match r {
             Variables => "variables".into(),
@@ -231,9 +140,9 @@ impl From<Context> for String {
     }
 }
 
-impl From<String> for Context {
+impl From<String> for EvaluateContext {
     fn from(s: String) -> Self {
-        use self::Context::*;
+        use self::EvaluateContext::*;
 
         match s.as_str() {
             "variables" => Variables,
@@ -243,133 +152,5 @@ impl From<String> for Context {
             "clipboard" => Clipboard,
             _ => Custom(s),
         }
-    }
-}
-
-impl From<Kind> for String {
-    fn from(r: Kind) -> Self {
-        use self::Kind::*;
-
-        match r {
-            Property => "property".into(),
-            Method => "method".into(),
-            Class => "class".into(),
-            Data => "data".into(),
-            Event => "event".into(),
-            BaseClass => "baseClass".into(),
-            InnerClass => "innerClass".into(),
-            Interface => "interface".into(),
-            MostDerivedClass => "mostDerivedClass".into(),
-            Virtual => "virtual".into(),
-            DataBreakpoint => "dataBreakpoint".into(),
-            Custom(s) => s,
-        }
-    }
-}
-
-impl From<String> for Kind {
-    fn from(s: String) -> Self {
-        use self::Kind::*;
-
-        match s.as_str() {
-            "property" => Property,
-            "method" => Method,
-            "class" => Class,
-            "data" => Data,
-            "event" => Event,
-            "baseClass" => BaseClass,
-            "innerClass" => InnerClass,
-            "interface" => Interface,
-            "mostDerivedClass" => MostDerivedClass,
-            "virtual" => Virtual,
-            "dataBreakpoint" => DataBreakpoint,
-            _ => Custom(s),
-        }
-    }
-}
-
-impl From<Attributes> for String {
-    fn from(r: Attributes) -> Self {
-        use self::Attributes::*;
-
-        match r {
-            Static => "static".into(),
-            Constant => "constant".into(),
-            ReadOnly => "readOnly".into(),
-            RawString => "rawString".into(),
-            HasObjectId => "hasObjectId".into(),
-            CanHaveObjectId => "canHaveObjectId".into(),
-            HasSideEffects => "hasSideEffects".into(),
-            HasDataBreakpoint => "hasDataBreakpoint".into(),
-            Custom(x) => x,
-        }
-    }
-}
-
-impl From<String> for Attributes {
-    fn from(s: String) -> Self {
-        use self::Attributes::*;
-
-        match s.as_str() {
-            "static" => Static,
-            "constant" => Constant,
-            "readOnly" => ReadOnly,
-            "rawString" => RawString,
-            "hasObjectId" => HasObjectId,
-            "canHaveObjectId" => CanHaveObjectId,
-            "hasSideEffects" => HasSideEffects,
-            "hasDataBreakpoint" => HasDataBreakpoint,
-            _ => Custom(s),
-        }
-    }
-}
-
-impl From<Visibility> for String {
-    fn from(r: Visibility) -> Self {
-        use self::Visibility::*;
-
-        match r {
-            Public => "public".into(),
-            Private => "private".into(),
-            Protected => "protected".into(),
-            Internal => "internal".into(),
-            Final => "final".into(),
-            Custom(x) => x,
-        }
-    }
-}
-
-impl From<String> for Visibility {
-    fn from(s: String) -> Self {
-        use self::Visibility::*;
-
-        match s.as_str() {
-            "public" => Public,
-            "private" => Private,
-            "protected" => Protected,
-            "internal" => Internal,
-            "final" => Final,
-            _ => Custom(s),
-        }
-    }
-}
-
-impl From<ValueFormat> for Value {
-    fn from(format: ValueFormat) -> Self {
-        let ValueFormat { hex } = format;
-
-        let name = utils::attribute_bool_optional("hex", hex);
-
-        utils::finalize_object(name)
-    }
-}
-
-impl TryFrom<&Map<String, Value>> for ValueFormat {
-    type Error = Error;
-
-    fn try_from(map: &Map<String, Value>) -> Result<Self, Self::Error> {
-        let hex = utils::get_bool_optional(map, "hex")?;
-
-        Ok(Self { hex })
     }
 }

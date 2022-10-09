@@ -61,7 +61,7 @@ impl From<InitializeArguments> for Value {
 
         let client_id = utils::attribute_string_optional("clientId", client_id);
         let client_name = utils::attribute_string_optional("clientName", client_name);
-        let adapter_id = utils::attribute_string("adapterId", adapter_id);
+        let adapter_id = utils::attribute_string("adapterID", adapter_id);
         let locale = utils::attribute_string_optional("locale", locale);
         let lines_start_at_1 = utils::attribute_bool_optional("linesStartAt1", lines_start_at_1);
         let column_start_at_1 = utils::attribute_bool_optional("columnStartAt1", column_start_at_1);
@@ -115,7 +115,7 @@ impl TryFrom<&Map<String, Value>> for InitializeArguments {
     fn try_from(map: &Map<String, Value>) -> Result<Self, Self::Error> {
         let client_id = utils::get_string_optional(map, "clientId")?;
         let client_name = utils::get_string_optional(map, "clientName")?;
-        let adapter_id = utils::get_string(map, "adapterId")?;
+        let adapter_id = utils::get_string(map, "adapterID")?;
         let locale = utils::get_string_optional(map, "locale")?;
         let lines_start_at_1 = utils::get_bool_optional(map, "linesStartAt1")?;
         let column_start_at_1 = utils::get_bool_optional(map, "columnStartAt1")?;

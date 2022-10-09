@@ -1,6 +1,6 @@
 use super::*;
 
-use crate::prelude::Source;
+use crate::types::Source;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BreakpointLocationsArguments {

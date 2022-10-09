@@ -177,6 +177,8 @@ where
                             let ev = ProtocolMessage::from(ev);
                             let ev = ev.into_adapter_message();
 
+                            tracing::debug!("outbound {:?}", ev);
+
                             if let Err(e) = outbound.write().await.write_all(ev.as_bytes()).await {
                                 tracing::error!("error sending event: {}", e);
                             }
@@ -312,7 +314,7 @@ where
                                 Ok(re) => re,
 
                                 Err(e) => {
-                                    tracing::debug!("received invalid request from client: {}", e);
+                                    tracing::warn!("received invalid request from client: {}", e);
                                     continue;
                                 }
                             };
