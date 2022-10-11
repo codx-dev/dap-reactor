@@ -1,6 +1,6 @@
 use serde_json::Value;
 
-use crate::types::{Breakpoint, Capabilities, Source};
+use crate::models::{Breakpoint, Capabilities, Source};
 
 mod impls;
 

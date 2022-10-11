@@ -1,6 +1,6 @@
 use super::*;
 
-use crate::types::{ValueFormat, VariablePresentationHint};
+use crate::models::{ValueFormat, VariablePresentationHint};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EvaluateArguments {
