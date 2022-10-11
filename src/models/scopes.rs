@@ -1,6 +1,6 @@
 use super::*;
 
-use crate::types::Scope;
+use crate::models::Scope;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ScopesArguments {

@@ -1,6 +1,6 @@
 use super::*;
 
-use crate::types::{StackFrame, StackFrameFormat};
+use crate::models::{StackFrame, StackFrameFormat};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StackTraceArguments {
