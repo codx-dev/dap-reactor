@@ -123,4 +123,7 @@ pub enum Event {
         reason: ThreadReason,
         thread_id: u64,
     },
+    Custom {
+        body: Option<Value>,
+    },
 }

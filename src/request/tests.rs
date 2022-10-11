@@ -141,7 +141,7 @@ fn encode_requests() {
                 arguments: EvaluateArguments {
                     expression: String::from("expression"),
                     frame_id: Some(60),
-                    context: Some(Context::Custom(String::from("context"))),
+                    context: Some(EvaluateContext::Custom(String::from("context"))),
                     format: Some(ValueFormat { hex: true }),
                 },
             },
@@ -181,7 +181,7 @@ fn encode_requests() {
                 "arguments": {
                     "clientId": "clientId",
                     "clientName": "clientName",
-                    "adapterId": "adapterId",
+                    "adapterID": "adapterID",
                     "locale": "locale",
                     "linesStartAt1": true,
                     "columnStartAt1": true,
@@ -200,7 +200,7 @@ fn encode_requests() {
                 arguments: InitializeArguments {
                     client_id: Some(String::from("clientId")),
                     client_name: Some(String::from("clientName")),
-                    adapter_id: String::from("adapterId"),
+                    adapter_id: String::from("adapterID"),
                     locale: Some(String::from("locale")),
                     lines_start_at_1: true,
                     column_start_at_1: true,
@@ -338,62 +338,92 @@ fn encode_requests() {
             },
         },
         RequestTestCase {
+            seq: 13,
+            encoded: json!({
+                "command": "custom",
+                "arguments": "foo"
+            }),
+            decoded: Request::Custom {
+                arguments: Some("foo".into()),
+            },
+        },
+        RequestTestCase {
+            seq: 13,
+            encoded: json!({
+                "command": "threads"
+            }),
+            decoded: Request::Threads,
+        },
+        RequestTestCase {
             seq: 28,
             encoded: json!({
-                "command": "customAddBreakpoint",
+                "command": "stackTrace",
                 "arguments": {
-                    "breakpoint": {
-                    "id": 60,
-                    "verified": true,
-                    "message": "foo",
-                    "source": {
-                        "name": "hello",
-                        "origin": "home",
-                    },
-                    "line": 50,
-                    "column": 90,
-                    "endLine": 110,
-                    "endColumn": 120,
-                    "instructionReference": "bar",
-                    "offset": 130,
+                    "threadId": 60,
+                    "startFrame": 83,
+                    "levels": 91,
+                    "format": {
+                        "parameters": true,
+                        "parameterTypes": true,
+                        "parameterNames": true,
+                        "parameterValues": true,
+                        "line": true,
+                        "module": true,
+                        "includeAll": true,
                     }
                 }
             }),
-            decoded: Request::CustomAddBreakpoint {
-                arguments: CustomAddBreakpointArguments {
-                    breakpoint: Breakpoint {
-                        id: Some(60),
-                        verified: true,
-                        message: Some(String::from("foo")),
-                        source: Some(Source {
-                            name: Some(String::from("hello")),
-                            source_reference: None,
-                            presentation_hint: None,
-                            origin: Some(String::from("home")),
-                            sources: Vec::new(),
-                            adapter_data: None,
-                            checksums: Vec::new(),
-                        }),
-                        line: Some(50),
-                        column: Some(90),
-                        end_line: Some(110),
-                        end_column: Some(120),
-                        instruction_reference: Some(String::from("bar")),
-                        offset: Some(130),
-                    },
+            decoded: Request::StackTrace {
+                arguments: StackTraceArguments {
+                    thread_id: 60,
+                    start_frame: Some(83),
+                    levels: Some(91),
+                    format: Some(StackFrameFormat {
+                        parameters: true,
+                        parameter_types: true,
+                        parameter_names: true,
+                        parameter_values: true,
+                        line: true,
+                        module: true,
+                        include_all: true,
+                    }),
                 },
+            },
+        },
+        RequestTestCase {
+            seq: 27,
+            encoded: json!({
+                "command": "scopes",
+                "arguments": {
+                    "frameId": 25
+                }
+            }),
+            decoded: Request::Scopes {
+                arguments: ScopesArguments { frame_id: 25 },
             },
         },
         RequestTestCase {
             seq: 28,
             encoded: json!({
-                "command": "customRemoveBreakpoint",
+                "command": "variables",
                 "arguments": {
-                    "id": 15,
+                    "variablesReference": 60,
+                    "filter": "indexed",
+                    "start": 11,
+                    "count": 12,
+                    "format": {
+                        "hex": true,
+                    }
                 }
             }),
-            decoded: Request::CustomRemoveBreakpoint {
-                arguments: CustomRemoveBreakpointArguments { id: 15 },
+            decoded: Request::Variables {
+                arguments: VariablesArguments {
+                    variables_reference: 60,
+                    filter: Some(VariablesArgumentsFilter::Indexed),
+                    start: Some(11),
+                    count: Some(12),
+                    format: Some(ValueFormat { hex: true }),
+                },
             },
         },
     ];

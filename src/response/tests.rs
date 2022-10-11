@@ -159,9 +159,12 @@ fn encode_responses() {
                     result: String::from("result"),
                     r#type: Some(String::from("type")),
                     presentation_hint: Some(VariablePresentationHint {
-                        kind: Kind::Property,
-                        attributes: vec![Attributes::Static, Attributes::Constant],
-                        visibility: Some(Visibility::Public),
+                        kind: Some(VariablePresentationHintKind::Property),
+                        attributes: vec![
+                            VariablePresentationHintAttribute::Static,
+                            VariablePresentationHintAttribute::Constant,
+                        ],
+                        visibility: Some(VariablePresentationHintVisibility::Public),
                         lazy: true,
                     }),
                     variables_reference: 2,
@@ -462,34 +465,212 @@ fn encode_responses() {
             decoded: Response::StepBack,
         },
         ResponseTestCase {
-            seq: 1514,
-            request_seq: 26,
+            seq: 1512,
+            request_seq: 24,
             encoded: json!({
-                "command": "customAddBreakpoint",
+                "command": "custom",
                 "success": true,
-                "body": {
-                    "id": 15
-                }
+                "body": "foo"
             }),
-            decoded: Response::CustomAddBreakpoint {
-                body: CustomAddBreakpointResponse { id: 15 },
+            decoded: Response::Custom {
+                body: Some("foo".into()),
             },
         },
         ResponseTestCase {
             seq: 1514,
             request_seq: 26,
             encoded: json!({
-                "command": "customRemoveBreakpoint",
+                "command": "threads",
                 "success": true,
                 "body": {
-                    "id": 28,
-                    "removed": true
+                    "threads": [{
+                        "id": 10,
+                        "name": "foo"
+                    }]
                 }
             }),
-            decoded: Response::CustomRemoveBreakpoint {
-                body: CustomRemoveBreakpointResponse {
-                    id: 28,
-                    removed: true,
+            decoded: Response::Threads {
+                body: ThreadsResponse {
+                    threads: vec![Thread {
+                        id: 10,
+                        name: String::from("foo"),
+                    }],
+                },
+            },
+        },
+        ResponseTestCase {
+            seq: 1514,
+            request_seq: 26,
+            encoded: json!({
+                "command": "stackTrace",
+                "success": true,
+                "body": {
+                    "stackFrames": [{
+                        "id": 18,
+                        "name": "foo",
+                        "source": {
+                            "name": "name",
+                            "sourceReference": 10,
+                            "presentationHint": "normal",
+                            "origin": "origin",
+                            "adapterData": 0,
+                            "checksums": [{
+                                "algorithm": "MD5",
+                                "checksum": "checksum",
+                            }]
+                        },
+                        "line": 31,
+                        "column": 82,
+                        "endLine": 28,
+                        "endColumn": 84,
+                        "canRestart": true,
+                        "instructionPointerReference": "bar",
+                        "moduleId": "baz",
+                        "presentationHint": "label",
+                    }],
+                    "totalFrames": 15,
+                }
+            }),
+            decoded: Response::StackTrace {
+                body: StackTraceResponse {
+                    stack_frames: vec![StackFrame {
+                        id: 18,
+                        name: "foo".into(),
+                        source: Some(Source {
+                            name: Some(String::from("name")),
+                            source_reference: Some(SourceReference::Reference(10)),
+                            presentation_hint: Some(SourcePresentationHint::Normal),
+                            origin: Some(String::from("origin")),
+                            sources: Vec::new(),
+                            adapter_data: Some(Value::from(0)),
+                            checksums: vec![Checksum {
+                                algorithm: ChecksumAlgorithm::Md5,
+                                checksum: String::from("checksum"),
+                            }],
+                        }),
+                        line: 31,
+                        column: 82,
+                        end_line: Some(28),
+                        end_column: Some(84),
+                        can_restart: true,
+                        instruction_pointer_reference: Some("bar".into()),
+                        module_id: Some(StackFrameModuleId::String("baz".into())),
+                        presentation_hint: Some(StackFramePresentationHint::Label),
+                    }],
+                    total_frames: Some(15),
+                },
+            },
+        },
+        ResponseTestCase {
+            seq: 1514,
+            request_seq: 26,
+            encoded: json!({
+                "command": "scopes",
+                "success": true,
+                "body": {
+                    "scopes": [{
+                        "name": "foo",
+                        "presentationHint": "locals",
+                        "variablesReference": 28,
+                        "namedVariables": 92,
+                        "indexedVariables": 91,
+                        "expensive": true,
+                        "source": {
+                            "name": "name",
+                            "sourceReference": 10,
+                            "presentationHint": "normal",
+                            "origin": "origin",
+                            "adapterData": 0,
+                            "checksums": [{
+                                "algorithm": "MD5",
+                                "checksum": "checksum",
+                            }]
+                        },
+                        "line": 11,
+                        "column": 12,
+                        "endLine": 13,
+                        "endColumn": 14,
+                    }]
+                }
+            }),
+            decoded: Response::Scopes {
+                body: ScopesResponse {
+                    scopes: vec![Scope {
+                        name: "foo".into(),
+                        presentation_hint: Some(ScopePresentationHint::Locals),
+                        variables_reference: 28,
+                        named_variables: Some(92),
+                        indexed_variables: Some(91),
+                        expensive: true,
+                        source: Some(Source {
+                            name: Some(String::from("name")),
+                            source_reference: Some(SourceReference::Reference(10)),
+                            presentation_hint: Some(SourcePresentationHint::Normal),
+                            origin: Some(String::from("origin")),
+                            sources: Vec::new(),
+                            adapter_data: Some(Value::from(0)),
+                            checksums: vec![Checksum {
+                                algorithm: ChecksumAlgorithm::Md5,
+                                checksum: String::from("checksum"),
+                            }],
+                        }),
+                        line: Some(11),
+                        column: Some(12),
+                        end_line: Some(13),
+                        end_column: Some(14),
+                    }],
+                },
+            },
+        },
+        ResponseTestCase {
+            seq: 1514,
+            request_seq: 26,
+            encoded: json!({
+                "command": "variables",
+                "success": true,
+                "body": {
+                    "variables": [{
+                        "name": "foo",
+                        "value": "bar",
+                        "type": "baz",
+                        "presentationHint": {
+                            "kind": "dataBreakpoint",
+                            "attributes": [
+                                "static",
+                                "constant"
+                            ],
+                            "visibility": "private",
+                            "lazy": true
+                        },
+                        "evaluateName": "eval",
+                        "variablesReference": 55,
+                        "namedVariables": 56,
+                        "indexedVariables": 57,
+                        "memoryReference": "ref",
+                    }]
+                }
+            }),
+            decoded: Response::Variables {
+                body: VariablesResponse {
+                    variables: vec![Variable {
+                        name: "foo".into(),
+                        value: "bar".into(),
+                        r#type: Some("baz".into()),
+                        presentation_hint: Some(VariablePresentationHint {
+                            kind: Some(VariablePresentationHintKind::DataBreakpoint),
+                            attributes: vec![
+                                VariablePresentationHintAttribute::Static,
+                                VariablePresentationHintAttribute::Constant,
+                            ],
+                            visibility: Some(VariablePresentationHintVisibility::Private),
+                            lazy: true,
+                        }),
+                        evaluate_name: Some("eval".into()),
+                        variables_reference: 55,
+                        named_variables: Some(56),
+                        indexed_variables: Some(57),
+                        memory_reference: Some("ref".into()),
+                    }],
                 },
             },
         },

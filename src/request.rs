@@ -57,18 +57,24 @@ pub enum Request {
     ReverseContinue {
         arguments: ReverseContinueArguments,
     },
+    Scopes {
+        arguments: ScopesArguments,
+    },
     SetBreakpoints {
         arguments: SetBreakpointsArguments,
+    },
+    StackTrace {
+        arguments: StackTraceArguments,
     },
     StepBack {
         arguments: StepBackArguments,
     },
-
-    CustomAddBreakpoint {
-        arguments: CustomAddBreakpointArguments,
+    Threads,
+    Variables {
+        arguments: VariablesArguments,
     },
-    CustomRemoveBreakpoint {
-        arguments: CustomRemoveBreakpointArguments,
+    Custom {
+        arguments: Option<Value>,
     },
 }
 
@@ -198,8 +204,22 @@ impl Request {
                 (command, Some(arguments))
             }
 
+            Request::Scopes { arguments } => {
+                let command = "scopes";
+                let arguments = arguments.into();
+
+                (command, Some(arguments))
+            }
+
             Request::SetBreakpoints { arguments } => {
                 let command = "setBreakpoints";
+                let arguments = arguments.into();
+
+                (command, Some(arguments))
+            }
+
+            Request::StackTrace { arguments } => {
+                let command = "stackTrace";
                 let arguments = arguments.into();
 
                 (command, Some(arguments))
@@ -212,17 +232,23 @@ impl Request {
                 (command, Some(arguments))
             }
 
-            Request::CustomAddBreakpoint { arguments } => {
-                let command = "customAddBreakpoint";
+            Request::Threads => {
+                let command = "threads";
+
+                (command, None)
+            }
+
+            Request::Variables { arguments } => {
+                let command = "variables";
                 let arguments = arguments.into();
 
                 (command, Some(arguments))
             }
-            Request::CustomRemoveBreakpoint { arguments } => {
-                let command = "customRemoveBreakpoint";
-                let arguments = arguments.into();
 
-                (command, Some(arguments))
+            Request::Custom { arguments } => {
+                let command = "custom";
+
+                (command, arguments)
             }
         };
 
@@ -357,6 +383,15 @@ impl TryFrom<&ProtocolRequest> for Request {
                 Ok(Self::ReverseContinue { arguments })
             }
 
+            "scopes" => {
+                let arguments =
+                    arguments.ok_or_else(|| Error::new("arguments", Cause::IsMandatory))?;
+
+                let arguments = ScopesArguments::try_from(arguments)?;
+
+                Ok(Self::Scopes { arguments })
+            }
+
             "setBreakpoints" => {
                 let arguments =
                     arguments.ok_or_else(|| Error::new("arguments", Cause::IsMandatory))?;
@@ -364,6 +399,15 @@ impl TryFrom<&ProtocolRequest> for Request {
                 let arguments = SetBreakpointsArguments::try_from(arguments)?;
 
                 Ok(Self::SetBreakpoints { arguments })
+            }
+
+            "stackTrace" => {
+                let arguments =
+                    arguments.ok_or_else(|| Error::new("arguments", Cause::IsMandatory))?;
+
+                let arguments = StackTraceArguments::try_from(arguments)?;
+
+                Ok(Self::StackTrace { arguments })
             }
 
             "stepBack" => {
@@ -375,22 +419,21 @@ impl TryFrom<&ProtocolRequest> for Request {
                 Ok(Self::StepBack { arguments })
             }
 
-            "customAddBreakpoint" => {
+            "threads" => Ok(Self::Threads),
+
+            "variables" => {
                 let arguments =
                     arguments.ok_or_else(|| Error::new("arguments", Cause::IsMandatory))?;
 
-                let arguments = CustomAddBreakpointArguments::try_from(arguments)?;
+                let arguments = VariablesArguments::try_from(arguments)?;
 
-                Ok(Self::CustomAddBreakpoint { arguments })
+                Ok(Self::Variables { arguments })
             }
 
-            "customRemoveBreakpoint" => {
-                let arguments =
-                    arguments.ok_or_else(|| Error::new("arguments", Cause::IsMandatory))?;
+            "custom" => {
+                let arguments = rq.arguments.as_ref().cloned();
 
-                let arguments = CustomRemoveBreakpointArguments::try_from(arguments)?;
-
-                Ok(Self::CustomRemoveBreakpoint { arguments })
+                Ok(Self::Custom { arguments })
             }
 
             _ => Err(Error::new("request", Cause::ExpectsEnum)),

@@ -2,6 +2,8 @@
 #[cfg(test)]
 mod tests;
 
+use serde_json::Value;
+
 use crate::error::{Cause, Error};
 use crate::models::*;
 use crate::protocol::ProtocolResponse;
@@ -41,15 +43,24 @@ pub enum Response {
     },
     Next,
     ReverseContinue,
+    Scopes {
+        body: ScopesResponse,
+    },
     SetBreakpoints {
         body: SetBreakpointsResponse,
     },
-    StepBack,
-    CustomAddBreakpoint {
-        body: CustomAddBreakpointResponse,
+    StackTrace {
+        body: StackTraceResponse,
     },
-    CustomRemoveBreakpoint {
-        body: CustomRemoveBreakpointResponse,
+    StepBack,
+    Threads {
+        body: ThreadsResponse,
+    },
+    Variables {
+        body: VariablesResponse,
+    },
+    Custom {
+        body: Option<Value>,
     },
 }
 
@@ -164,10 +175,22 @@ impl Response {
                 command: "reverseContinue".to_string(),
                 result: Ok(None),
             },
+            Response::Scopes { body } => ProtocolResponse {
+                seq,
+                request_seq,
+                command: "scopes".to_string(),
+                result: Ok(Some(body.into())),
+            },
             Response::SetBreakpoints { body } => ProtocolResponse {
                 seq,
                 request_seq,
                 command: "setBreakpoints".to_string(),
+                result: Ok(Some(body.into())),
+            },
+            Response::StackTrace { body } => ProtocolResponse {
+                seq,
+                request_seq,
+                command: "stackTrace".to_string(),
                 result: Ok(Some(body.into())),
             },
             Response::StepBack => ProtocolResponse {
@@ -176,17 +199,23 @@ impl Response {
                 command: "stepBack".to_string(),
                 result: Ok(None),
             },
-            Response::CustomAddBreakpoint { body } => ProtocolResponse {
+            Response::Threads { body } => ProtocolResponse {
                 seq,
                 request_seq,
-                command: "customAddBreakpoint".to_string(),
+                command: "threads".to_string(),
                 result: Ok(Some(body.into())),
             },
-            Response::CustomRemoveBreakpoint { body } => ProtocolResponse {
+            Response::Variables { body } => ProtocolResponse {
                 seq,
                 request_seq,
-                command: "customRemoveBreakpoint".to_string(),
+                command: "variables".to_string(),
                 result: Ok(Some(body.into())),
+            },
+            Response::Custom { body } => ProtocolResponse {
+                seq,
+                request_seq,
+                command: "custom".to_string(),
+                result: Ok(body),
             },
         }
     }
@@ -196,7 +225,7 @@ impl TryFrom<&ProtocolResponse> for Response {
     type Error = Error;
 
     fn try_from(re: &ProtocolResponse) -> Result<Self, Error> {
-        let result = match &re.result {
+        let res = match &re.result {
             Ok(r) => r,
             Err(e) => {
                 return Ok(Self::Error {
@@ -206,7 +235,7 @@ impl TryFrom<&ProtocolResponse> for Response {
             }
         };
 
-        let result = result
+        let result = res
             .as_ref()
             .ok_or(Error::new("result", Cause::IsMandatory))?
             .as_object()
@@ -240,15 +269,24 @@ impl TryFrom<&ProtocolResponse> for Response {
             }),
             "next" => Ok(Self::Next),
             "reverseContinue" => Ok(Self::ReverseContinue),
+            "scopes" => Ok(Self::Scopes {
+                body: ScopesResponse::try_from(result)?,
+            }),
             "setBreakpoints" => Ok(Self::SetBreakpoints {
                 body: SetBreakpointsResponse::try_from(result)?,
             }),
-            "stepBack" => Ok(Self::StepBack),
-            "customAddBreakpoint" => Ok(Self::CustomAddBreakpoint {
-                body: CustomAddBreakpointResponse::try_from(result)?,
+            "stackTrace" => Ok(Self::StackTrace {
+                body: StackTraceResponse::try_from(result)?,
             }),
-            "customRemoveBreakpoint" => Ok(Self::CustomRemoveBreakpoint {
-                body: CustomRemoveBreakpointResponse::try_from(result)?,
+            "stepBack" => Ok(Self::StepBack),
+            "threads" => Ok(Self::Threads {
+                body: ThreadsResponse::try_from(result)?,
+            }),
+            "variables" => Ok(Self::Variables {
+                body: VariablesResponse::try_from(result)?,
+            }),
+            "custom" => Ok(Self::Custom {
+                body: res.as_ref().cloned(),
             }),
             _ => Err(Error::new("response", Cause::ExpectsEnum)),
         }
