@@ -1,4 +1,4 @@
-use crate::types::Breakpoint;
+use crate::models::Breakpoint;
 
 use super::*;
 

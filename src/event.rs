@@ -1,6 +1,8 @@
+//! Data structures for
+//! [events](https://microsoft.github.io/debug-adapter-protocol/specification#Events)
 use serde_json::Value;
 
-use crate::types::{Breakpoint, Capabilities, Source};
+use crate::models::{Breakpoint, Capabilities, Source};
 
 mod impls;
 

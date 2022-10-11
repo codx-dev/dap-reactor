@@ -1,3 +1,4 @@
+//! Handles converting outgoing responses and serializing
 #[cfg(test)]
 mod tests;
 

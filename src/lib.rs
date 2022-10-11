@@ -4,12 +4,11 @@ pub mod models;
 pub mod protocol;
 pub mod request;
 pub mod response;
-pub mod types;
 pub(crate) mod utils;
 
 #[cfg(feature = "reactor")]
 pub mod reactor;
-
+/// Bring all data structures in scope
 pub mod prelude {
     pub use crate::error::*;
     pub use crate::event::*;
@@ -17,7 +16,6 @@ pub mod prelude {
     pub use crate::protocol::*;
     pub use crate::request::*;
     pub use crate::response::*;
-    pub use crate::types::*;
 
     #[cfg(feature = "reactor")]
     pub use crate::reactor::*;
