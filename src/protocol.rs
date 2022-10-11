@@ -1,7 +1,7 @@
 use std::io;
 use std::{fmt, str};
 
-pub use serde_json::{json, Map, Value};
+use serde_json::Value;
 
 use crate::error::{Cause, Error};
 use crate::models::Message;
