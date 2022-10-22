@@ -19,8 +19,8 @@ pub enum Cause {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Error {
-    attribute: &'static str,
-    cause: Cause,
+    pub attribute: &'static str,
+    pub cause: Cause,
 }
 
 impl Error {
