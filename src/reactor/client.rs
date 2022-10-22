@@ -6,6 +6,7 @@ use tokio::sync::mpsc;
 use tokio::sync::mpsc::error::SendError;
 use tokio::task;
 
+use crate::error::{Cause, Error};
 use crate::event::Event;
 use crate::protocol::ProtocolMessage;
 use crate::request::Request;
@@ -26,7 +27,7 @@ impl ClientBuilder {
     pub fn new() -> Self {
         Self {
             capacity: 50,
-            buffer: 4096,
+            buffer: 1024 * 512,
         }
     }
 
@@ -97,6 +98,7 @@ impl Client {
                 };
 
                 let mut bytes = &buf.as_ref()[..n];
+                let mut should_clear = true;
 
                 while !bytes.is_empty() {
                     let message = match ProtocolMessage::try_from_bytes(bytes) {
@@ -104,9 +106,16 @@ impl Client {
                             bytes = &bytes[n..];
                             message
                         }
+                        Err(Error {
+                            cause: Cause::UnexpectedEof,
+                            ..
+                        }) => {
+                            should_clear = false;
+                            break;
+                        }
                         Err(e) => {
                             tracing::warn!("invalid message received: {}", e);
-                            continue;
+                            break;
                         }
                     };
 
@@ -147,7 +156,9 @@ impl Client {
                     }
                 }
 
-                buf.clear();
+                if should_clear {
+                    buf.clear();
+                }
             }
         });
 
